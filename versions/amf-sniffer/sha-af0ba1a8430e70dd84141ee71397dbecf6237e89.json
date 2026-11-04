@@ -1,0 +1,19 @@
+{
+  "image": "ghcr.io/yassir63/amf-sniffer:sha-af0ba1a8430e70dd84141ee71397dbecf6237e89",
+  "version_alias": "ghcr.io/yassir63/amf-sniffer:2026w43",
+  "digest": "sha256:49c6ea42513f85b95e87295f6540b8b89487bf7029e176d8c45b26827ff0c529",
+  "source_repository": "yassir63/fiveg-lens-images",
+  "source_commit": "af0ba1a8430e70dd84141ee71397dbecf6237e89",
+  "changes": "Carry per-gNB tunnel endpoint context for UE/session correlation.",
+  "source_files_sha256": {
+    "amf-sniffer/Dockerfile": "85b15741ebe7ac7e4b4e7e1a448f01e7c811477c926c2c22b6494e0cff321b2c",
+    "amf-sniffer/amf_sniffer.py": "c8a8f13819abbb7569c53166eac88c5e5e1f5448aee4f56308f43d0f10da1d1a",
+    "common/tunnel_identity.py": "bcc961a9fd6e89e8705c67bad5905ec62404e26ec85d053045150a520857d1ef"
+  },
+  "validation": {
+    "workflow": "https://github.com/yassir63/fiveg-lens-images/actions/runs/41882653262",
+    "image_build": "passed",
+    "packaged_python_compilation": "passed",
+    "live_5g_deployment": "not_run"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "image": "ghcr.io/yassir63/ue_mapper_api:sha-af0ba1a8430e70dd84141ee71397dbecf6237e89",
+  "version_alias": "ghcr.io/yassir63/ue_mapper_api:2026w43",
+  "digest": "sha256:526ea91690c6e8ad39167216cef7083685cf71d7454d688125bba5bdc56741ab",
+  "source_repository": "yassir63/fiveg-lens-images",
+  "source_commit": "af0ba1a8430e70dd84141ee71397dbecf6237e89",
+  "changes": "Scope tunnel correlation by endpoint, direction and TEID; expose PFCP session-to-IMSI metadata.",
+  "source_files_sha256": {
+    "ue-mapper/Dockerfile": "7602574bb0614f221fc5ef6aedf207a2a5d5146e3805fa49c2876bb1f4e36fa6",
+    "ue-mapper/ue_mapper_api.py": "ee999ce878c8a65b26576201409101b5ea3a075098a95479a8d09a7294fa6498",
+    "common/tunnel_identity.py": "bcc961a9fd6e89e8705c67bad5905ec62404e26ec85d053045150a520857d1ef"
+  },
+  "validation": {
+    "workflow": "https://github.com/yassir63/fiveg-lens-images/actions/runs/41882653262",
+    "image_build": "passed",
+    "packaged_python_compilation": "passed",
+    "live_5g_deployment": "not_run"
+  }
+}

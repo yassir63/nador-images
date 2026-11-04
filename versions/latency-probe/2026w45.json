@@ -1,7 +1,7 @@
 {
   "image": "ghcr.io/yassir63/ebpf-latency-probe:2026w45",
-  "digest": null,
-  "status": "prepared_not_built",
+  "digest": "sha256:308c288051469956b3a3362481f4e33331efee8968e5848b72aefb3b58ff8ba9",
+  "status": "built_and_published",
   "changes": "Build eBPF and C programs from source in a Debian build stage; use a Debian runtime with explicit libraries, Python exporter dependencies and tc. Remove inheritance from older latency-probe images; packet processing, mapping and entrypoint logic unchanged.",
   "previous_version": "2026w43-fragments",
   "base_image": "debian:bookworm-slim",
@@ -18,8 +18,11 @@
   },
   "validation": {
     "probe_logic_unchanged": true,
-    "image_build": "not_run",
+    "image_build": "passed",
     "kernel_verifier": "not_run",
-    "runtime": "not_run"
-  }
+    "runtime": "not_run",
+    "packaged_python_compilation": "passed"
+  },
+  "source_commit": "af0ba1a8430e70dd84141ee71397dbecf6237e89",
+  "workflow": "https://github.com/yassir63/fiveg-lens-images/actions/runs/41882653262"
 }

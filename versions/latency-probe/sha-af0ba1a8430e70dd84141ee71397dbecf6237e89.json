@@ -1,0 +1,25 @@
+{
+  "image": "ghcr.io/yassir63/ebpf-latency-probe:sha-af0ba1a8430e70dd84141ee71397dbecf6237e89",
+  "version_alias": "ghcr.io/yassir63/ebpf-latency-probe:2026w45",
+  "digest": "sha256:308c288051469956b3a3362481f4e33331efee8968e5848b72aefb3b58ff8ba9",
+  "source_repository": "yassir63/fiveg-lens-images",
+  "source_commit": "af0ba1a8430e70dd84141ee71397dbecf6237e89",
+  "changes": "Build eBPF and C programs from source in a Debian build stage; use a Debian runtime with explicit libraries, Python exporter dependencies and tc. Remove inheritance from older latency-probe images; packet processing, mapping and entrypoint logic unchanged.",
+  "source_files_sha256": {
+    "latency-probe/Dockerfile": "5521f59024eee33849444b3ba4df56c73bbd0d92ec2113132fde5a0a14d99749",
+    "latency-probe/Makefile": "e2890196012d44f2749c9bb11bb02197d0654e0670277f3f1392819ce0681682",
+    "latency-probe/entrypoint-latency.sh": "5b874919dd267fdd40ca43026eff3e0bd07893659ff18c6eb7205761f18056d9",
+    "latency-probe/exporter.py": "726acdc2ca5e7b3e111c87524616b0524fd02aa5fa2892f39210dcd68104acee",
+    "latency-probe/gtp_latency.bpf.c": "9efac5b5a258d7503a01ec3b2219e2439422445ca20a0a3adb092d99dcaedc6c",
+    "latency-probe/gtp_latency.h": "7296f20241f43f583cbd495456e6479f49d67d8346e2e8fe3d0fce9ced41aa3d",
+    "latency-probe/gtp_latency_user.c": "cb8aedb62d4f37be301933abf417dbf80766f50efb15b799adf4ef0cf00aad2a",
+    "latency-probe/latency_socket_server.py": "5b316069bd4852e7f8ff8c5275c79277a7c0af3c366d6b55369b760eb759ce0c",
+    "common/tunnel_identity.py": "bcc961a9fd6e89e8705c67bad5905ec62404e26ec85d053045150a520857d1ef"
+  },
+  "validation": {
+    "workflow": "https://github.com/yassir63/fiveg-lens-images/actions/runs/41882653262",
+    "image_build": "passed",
+    "packaged_python_compilation": "passed",
+    "live_5g_deployment": "not_run"
+  }
+}

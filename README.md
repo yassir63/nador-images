@@ -5,7 +5,8 @@ Source code for the monitoring containers used by [FiveG Lens](https://github.co
 The component runtime sources originate from the recorded local build directories.
 The controller default probe reference now points to GHCR; packet processing and discovery logic are unchanged.
 The controller builds from an official Python image, and the latency probe builds from Debian.
-Both standalone versions are prepared but have not been built or runtime-tested.
+Both standalone versions passed the initial image builds and packaged Python checks.
+They have not yet been validated in a live 5G deployment.
 `common/` contains the shared tunnel-identity module. All images target Linux amd64.
 
 | Component | Selected version | Docker build context |
@@ -19,7 +20,7 @@ Both standalone versions are prepared but have not been built or runtime-tested.
 | `packet-pairer` | `2026w43` | `.` |
 | `kpi-calculator-oai` | `2026w43-radio-scoped` | `kpi-calculator-oai` |
 
-`images.json` lists the build contexts and GHCR names. No images have been published from this repository yet.
+`images.json` lists the build contexts and GHCR names. The initial eight images have been published and are publicly pullable from GHCR.
 Dockerfiles expect the listed context; for example, the controller uses the repository root,
 while the OAI calculator uses its own directory.
 
@@ -45,6 +46,8 @@ Current records include source-file SHA-256 hashes. Five components were checked
 Python script layers; the controller and probes match recorded build-source hashes.
 Historical records without an exact source snapshot say so explicitly. Keep existing version records
 unchanged and add a new record for each subsequent version.
+The initial GHCR publications are also archived as `versions/<component>/sha-<commit>.json`,
+with their registry digests, source hashes and workflow link.
 Source origins are relative to the original CodeDev directory, without personal absolute paths.
 
 ## Existing base-image dependencies
