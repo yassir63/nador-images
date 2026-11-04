@@ -455,7 +455,14 @@ def parse_pfcp(pkt):
     if dl_teid:
         store_teid_hash(dl_teid, ue_ip, "DL", imsi, ctx.get("gnb_n3_ip"), ctx.get("session_key"), session_metadata)
 
+from observation_runtime import make_pfcp_observer
+
+_observation = None
+
+
 def handle_pfcp(pkt):
+    if _observation and pkt.haslayer(PFCP):
+        _observation.observe_packet(pkt)
     if not pkt.haslayer(PFCP):
         return
     try:
@@ -464,8 +471,10 @@ def handle_pfcp(pkt):
         return
 
 def main():
+    global _observation
+    _observation = make_pfcp_observer()
     print(f"🚀 PFCP sniffer running on '{interface}' (udp/8805)...")
-    sniff(filter="udp port 8805", iface=interface, prn=handle_pfcp, store=0)
+    sniff(filter="udp port 8805", iface=interface, prn=handle_pfcp, store=0, started_callback=_observation.mark_capture_started if _observation else None)
 
 if __name__ == "__main__":
     main()

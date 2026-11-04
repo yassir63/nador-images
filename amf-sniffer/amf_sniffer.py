@@ -1195,6 +1195,9 @@ def should_log_error(count: int) -> bool:
     return count <= 10 or count & (count - 1) == 0
 
 
+from observation_runtime import make_ngap_observer
+
+
 def main() -> int:
     interface = os.getenv("amf_sniffer_iface") or (
         sys.argv[1] if len(sys.argv) > 1 else ""
@@ -1259,7 +1262,10 @@ def main() -> int:
     )
 
     try:
+        observation = make_ngap_observer()
         for packet in capture.sniff_continuously():
+            if observation:
+                observation.mark_capture_started()
             if stopping:
                 break
             stats.increment("captured_packets")
@@ -1283,6 +1289,8 @@ def main() -> int:
                 else:
                     stats.increment("nas_identity_missing_association")
                 for layer in ngap_layers:
+                    if observation:
+                        observation.observe_layer(layer, scope=repr(association))
                     packet_processor.process(layer)
             except Exception as exc:
                 count = stats.increment("packet_errors")

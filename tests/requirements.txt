@@ -1,0 +1,5 @@
+pytest>=8,<10
+prometheus-client>=0.20,<1
+redis>=5,<9
+scapy>=2.5,<3
+flask>=3,<4

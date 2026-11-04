@@ -4,10 +4,13 @@ from prometheus_client import CONTENT_TYPE_LATEST, CollectorRegistry, Gauge, gen
 import redis
 import os
 
+from mapper_coverage import MapperMetrics
+
 app = Flask(__name__)
 
 redis_host = os.getenv("REDIS_HOST", "redis")
 rdb = redis.Redis(host=redis_host, port=6379, decode_responses=True)
+_coverage = MapperMetrics(redis.Redis(host=redis_host, port=6379, decode_responses=True, socket_timeout=1, socket_connect_timeout=1))
 
 
 # -------------------------------------------------
@@ -275,6 +278,7 @@ def session_metrics():
     labels = ("imsi", "ue_ip", "gnb_id", "slice_id", "session_key",
               "smf_seid", "smf_pfcp_ip", "upf_seid", "upf_pfcp_ip")
     registry = CollectorRegistry()
+    registry.register(_coverage)
     metric = Gauge("fiveg_ue_session_info", "Current UE to PFCP session mapping", labels, registry=registry)
     for row in build_inventory_rows(limit=2000):
         if row.get("imsi"):

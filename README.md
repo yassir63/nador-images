@@ -14,9 +14,10 @@ They have not yet been validated in a live 5G deployment.
 | `controller` | `2026w45` | `.` |
 | `throughput-probe` | `2026w44` | `.` |
 | `latency-probe` | `2026w45` | `.` |
-| `ue-mapper` | `2026w43` | `.` |
-| `amf-sniffer` | `2026w43` | `.` |
-| `smf-sniffer` | `2026w43` | `.` |
+| `ue-mapper` | `2026w45-ml` (prepared, not published) | `.` |
+| `amf-sniffer` | `2026w45-ml` (prepared, not published) | `.` |
+| `smf-sniffer` | `2026w45-ml` (prepared, not published) | `.` |
+| `user-plane-path` | `2026w45-ml` (prepared, not published) | `.` |
 | `packet-pairer` | `2026w43` | `.` |
 | `kpi-calculator-oai` | `2026w43-radio-scoped` | `kpi-calculator-oai` |
 
@@ -28,6 +29,10 @@ while the OAI calculator uses its own directory.
 
 The workflow checks and builds changed components on pull requests and pushes to `main`.
 Successful `main` builds publish automatically to GHCR using `GITHUB_TOKEN`; pull requests do not publish.
+The `ml-observability` branch also publishes, but only the four ML collector
+images with separate `-ml` version tags. It does not rebuild/retag the stable
+controller, latency or throughput images, and does not propose main monitoring
+default changes. Each ML publication also receives an exact commit tag.
 Shared `common/` changes rebuild its consumers. Initial pushes and manual runs build every image.
 Changing the workflow, `images.json` or `.dockerignore` rebuilds every image.
 
@@ -49,6 +54,45 @@ unchanged and add a new record for each subsequent version.
 The initial GHCR publications are also archived as `versions/<component>/sha-<commit>.json`,
 with their registry digests, source hashes and workflow link.
 Source origins are relative to the original CodeDev directory, without personal absolute paths.
+
+## Optional ML observability collectors
+
+This repository owns the runtime sources and Dockerfiles. FiveG Lens owns the
+deployment settings, Helm assets and experiment artifact collection; there is
+no need to regenerate image sources from a FiveG Lens checkout.
+
+- `amf-sniffer/ngap_metrics.py` adds N2 PDU-session resource setup timing,
+  outcomes and correlation diagnostics to the current AMF sniffer. Enable with
+  `AMF_NGAP_METRICS_ENABLED=true`; port 9102 by default.
+- `smf-sniffer/pfcp_metrics.py` adds PFCP session establishment timing and Cause
+  outcomes to the current SMF sniffer. Enable with
+  `SMF_PFCP_METRICS_ENABLED=true`; port 9104 by default.
+- `common/observation_runtime.py` connects those optional collectors to the
+  existing packet loops without replacing the scoped mapper logic.
+- `ue-mapper/mapper_coverage.py` extends `/metrics` with bounded context coverage
+  and Redis collection health, retaining `fiveg_ue_session_info`.
+- `user-plane-path/probe.py` is a separate external Linux interface/GTP-U probe.
+  FiveG Lens injects it into selected gNB/UPF pods and sets port 9403. Standalone
+  default port is 9103. AF_PACKET capture requires Linux and `NET_RAW` capability.
+
+The `2026w45-ml` source records intentionally have no image digest: these changes
+have not been built, published or tested in a live deployment. Historical version
+records are unchanged. Protocol metrics are local observations; missing or
+expired observations alone do not prove network faults.
+
+Build from the repository root, selecting your desired local tag:
+
+```bash
+docker build --platform linux/amd64 -f amf-sniffer/Dockerfile -t amf-sniffer:ml-test .
+docker build --platform linux/amd64 -f smf-sniffer/Dockerfile -t smf-sniffer:ml-test .
+docker build --platform linux/amd64 -f ue-mapper/Dockerfile -t ue-mapper:ml-test .
+docker build --platform linux/amd64 -f user-plane-path/Dockerfile -t user-plane-path:ml-test .
+```
+
+The existing workflow now tests collectors before building. It discovers the
+new path-probe image through `images.json`. Its publication is reported in update
+proposals but does not change default monitoring images or enable the feature:
+select its published reference explicitly with `ObservabilitySettings.path_image`.
 
 ## Existing base-image dependencies
 

@@ -2,19 +2,28 @@ name: Build and publish images
 
 on:
   push:
-    branches: [main]
+    branches: [main, ml-observability]
   pull_request:
   workflow_dispatch:
 
 permissions:
   contents: read
 
-# Keep main publications ordered so older builds cannot replace newer version tags.
+# Keep publications ordered within each branch.
 concurrency:
   group: images-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
+  test:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - name: Test protocol collectors and build metadata
+        run: |
+          python3 -m venv /tmp/collector-tests
+          /tmp/collector-tests/bin/python -m pip install -r tests/requirements.txt
+          /tmp/collector-tests/bin/python -m pytest -q tests
   select:
     runs-on: ubuntu-24.04
     outputs:
@@ -30,7 +39,7 @@ jobs:
         run: python3 .github/image_matrix.py
 
   build:
-    needs: select
+    needs: [select, test]
     if: ${{ fromJSON(needs.select.outputs.matrix).include[0] != null }}
     runs-on: ubuntu-24.04
     permissions:
@@ -61,14 +70,14 @@ jobs:
       - name: Check packaged Python source
         run: docker run --rm --network none --entrypoint python3 "$VERSION_IMAGE" -m compileall -q .
       - name: Log in to GHCR
-        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/ml-observability')
         uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Publish and record image
-        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/ml-observability')
         run: |
           export SHA_IMAGE="${VERSION_IMAGE%:*}:sha-$GITHUB_SHA"
           docker tag "$VERSION_IMAGE" "$SHA_IMAGE"
@@ -98,7 +107,7 @@ jobs:
           Path("build-record.json").write_text(json.dumps(record, indent=2) + "\n")
           PY
       - name: Save publication record
-        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/ml-observability')
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
           name: image-${{ matrix.component }}-${{ github.sha }}

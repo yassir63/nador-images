@@ -1,0 +1,13 @@
+{
+  "image": "ghcr.io/yassir63/ue_mapper_api:2026w45-ml",
+  "digest": null,
+  "status": "source-prepared-not-published",
+  "changes": "Add optional observability metrics while retaining current scoped mapping.",
+  "source_origin": "fiveg-lens-images/ue-mapper",
+  "source_files_sha256": {
+    "ue-mapper/Dockerfile": "3b25a298a3b0ff6eb6d159cf666a0a9d82f5deb8b37122d5310b1b876bada63a",
+    "ue-mapper/ue_mapper_api.py": "9884ba596846e42a2400e945fcbcd889bf0562d8cc12af8f744d84b91891e216",
+    "ue-mapper/mapper_coverage.py": "a128648d3f212c7bc886abf42f5a49311fa0c9181613c16d610403b1841dec15",
+    "common/tunnel_identity.py": "bcc961a9fd6e89e8705c67bad5905ec62404e26ec85d053045150a520857d1ef"
+  }
+}

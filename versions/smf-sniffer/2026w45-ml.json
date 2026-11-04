@@ -1,0 +1,14 @@
+{
+  "image": "ghcr.io/yassir63/smf-sniffer:2026w45-ml",
+  "digest": null,
+  "status": "source-prepared-not-published",
+  "changes": "Add optional observability metrics while retaining current scoped mapping.",
+  "source_origin": "fiveg-lens-images/smf-sniffer",
+  "source_files_sha256": {
+    "smf-sniffer/Dockerfile": "a2dda6fe75415d33ebeced01e6a985f69ed686877e98f7872ab08f572f65a3f8",
+    "smf-sniffer/smf_sniffer.py": "30cd206f57a47964c773a3b7c9957d38758c98ce1e3cf5fa33b14c988224b74a",
+    "smf-sniffer/pfcp_metrics.py": "8f2dca7b39aa1f47fac923822153705fbf6ee71c8386b48e438d9d289dbb89cd",
+    "common/tunnel_identity.py": "bcc961a9fd6e89e8705c67bad5905ec62404e26ec85d053045150a520857d1ef",
+    "common/observation_runtime.py": "8fd8ebf65ee8321265cb4336c91184fbc36f8417114f9690ca1f8eacced5b047"
+  }
+}

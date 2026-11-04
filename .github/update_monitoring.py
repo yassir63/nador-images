@@ -13,11 +13,17 @@ def apply_records(manifest: dict, records: list[dict], images: dict) -> str:
     details = []
     for record in records:
         component = record["component"]
-        group, key = images[component]["monitoring_target"].split(".")
         sha = record["source_commit"]
         reference = images[component]["ghcr_image"].rsplit(":", 1)[0] + ":sha-" + sha
         if reference not in record["tags"]:
             raise ValueError(f"Missing commit-tagged publication for {component}")
+        target = images[component].get("monitoring_target")
+        if not target:
+            source = f"https://github.com/{record['source_repository']}/commit/{sha}"
+            lines.append(f"| {component} (opt-in; no default changed) | `{reference}` | `{record['digest']}` |")
+            details.append(f"- {component}: [{record['source_change']}]({source}); select through ObservabilitySettings.path_image.")
+            continue
+        group, key = target.split(".")
         if group == "probes":
             manifest[group][key] = reference
         else:
