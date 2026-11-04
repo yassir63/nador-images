@@ -1,0 +1,162 @@
+name: Build and publish images
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Keep main publications ordered so older builds cannot replace newer version tags.
+concurrency:
+  group: images-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  select:
+    runs-on: ubuntu-24.04
+    outputs:
+      matrix: ${{ steps.images.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 0
+      - name: Select changed components
+        id: images
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: python3 .github/image_matrix.py
+
+  build:
+    needs: select
+    if: ${{ fromJSON(needs.select.outputs.matrix).include[0] != null }}
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.select.outputs.matrix) }}
+    env:
+      COMPONENT: ${{ matrix.component }}
+      DOCKERFILE: ${{ matrix.dockerfile }}
+      BUILD_CONTEXT: ${{ matrix.context }}
+      PLATFORM: ${{ matrix.platform }}
+      VERSION_IMAGE: ${{ matrix.ghcr_image }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - name: Check source syntax
+        run: |
+          python3 -m compileall -q "$COMPONENT" common
+          find "$COMPONENT" -name '*.sh' -exec bash -n {} \;
+      - name: Build image
+        run: |
+          docker build --pull --platform "$PLATFORM" \
+            --file "$DOCKERFILE" --tag "$VERSION_IMAGE" \
+            --label "org.opencontainers.image.source=https://github.com/$GITHUB_REPOSITORY" \
+            --label "org.opencontainers.image.revision=$GITHUB_SHA" \
+            "$BUILD_CONTEXT"
+      - name: Check packaged Python source
+        run: docker run --rm --network none --entrypoint python3 "$VERSION_IMAGE" -m compileall -q .
+      - name: Log in to GHCR
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Publish and record image
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        run: |
+          export SHA_IMAGE="${VERSION_IMAGE%:*}:sha-$GITHUB_SHA"
+          docker tag "$VERSION_IMAGE" "$SHA_IMAGE"
+          docker push "$SHA_IMAGE"
+          docker push "$VERSION_IMAGE"
+          docker buildx imagetools inspect "$SHA_IMAGE" --format '{{json .Manifest}}' > manifest.json
+          python3 - <<'PY'
+          import hashlib, json, os, subprocess
+          from datetime import UTC, datetime
+          from pathlib import Path
+
+          config = json.loads(Path("images.json").read_text())[os.environ["COMPONENT"]]
+          version = json.loads(Path(config["version_record"]).read_text())
+          record = {
+              "component": os.environ["COMPONENT"],
+              "source_commit": os.environ["GITHUB_SHA"],
+              "source_repository": os.environ["GITHUB_REPOSITORY"],
+              "source_change": subprocess.check_output(["git", "log", "-1", "--format=%s"], text=True).strip(),
+              "tags": [os.environ["VERSION_IMAGE"], os.environ["SHA_IMAGE"]],
+              "digest": json.loads(Path("manifest.json").read_text())["digest"],
+              "published_at": datetime.now(UTC).isoformat(),
+              "source_files_sha256": {
+                  name: hashlib.sha256(Path(name).read_bytes()).hexdigest()
+                  for name in version["source_files_sha256"]
+              },
+          }
+          Path("build-record.json").write_text(json.dumps(record, indent=2) + "\n")
+          PY
+      - name: Save publication record
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: image-${{ matrix.component }}-${{ github.sha }}
+          path: build-record.json
+          retention-days: 90
+
+  propose-monitoring-update:
+    needs: build
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check monitoring update authorization
+        id: authorization
+        env:
+          UPDATE_TOKEN: ${{ secrets.MONITORING_REPO_TOKEN }}
+        run: |
+          if [ -n "$UPDATE_TOKEN" ]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::Set MONITORING_REPO_TOKEN to enable monitoring update proposals. Images remain published."
+          fi
+      - name: Check out image updater
+        if: steps.authorization.outputs.enabled == 'true'
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          path: images
+          persist-credentials: false
+      - name: Download publication records
+        if: steps.authorization.outputs.enabled == 'true'
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          pattern: image-*-${{ github.sha }}
+          path: records
+      - name: Check out monitoring library
+        if: steps.authorization.outputs.enabled == 'true'
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          repository: ${{ github.repository_owner }}/fiveg-lens
+          ref: main
+          path: monitoring
+          token: ${{ secrets.MONITORING_REPO_TOKEN }}
+          persist-credentials: false
+      - name: Prepare default image update
+        if: steps.authorization.outputs.enabled == 'true'
+        run: |
+          python3 images/.github/update_monitoring.py \
+            --images images/images.json --records records \
+            --manifest monitoring/src/fiveg_lens/assets/images.json \
+            --body-file image-update.md
+      - name: Propose monitoring update
+        if: steps.authorization.outputs.enabled == 'true'
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8
+        with:
+          token: ${{ secrets.MONITORING_REPO_TOKEN }}
+          path: monitoring
+          base: main
+          branch: automation/images-${{ github.sha }}
+          add-paths: src/fiveg_lens/assets/images.json
+          commit-message: Update default monitoring image builds
+          title: Update default monitoring images
+          body-path: ${{ github.workspace }}/image-update.md

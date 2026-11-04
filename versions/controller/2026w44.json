@@ -1,0 +1,15 @@
+{
+  "image": "r2labuser/kopf-controller:2026w44",
+  "digest": "sha256:10dd92b4a6066d1a73130dbf0eae26f9f5ee0471cfeae11a59c84a7ef8f00053",
+  "changes": "Shared image for latency and throughput workers in one controller pod; separate modes, exporter ports, TC settings and Kopf markers. Discovery predicates preserved.",
+  "source_origin": "monitoring/throughput-integration-2026w43/controller",
+  "source_files_sha256": {
+    "controller/Dockerfile": "672a873e47b5c74989484f5f49b043e025f83dc3b97a1f485ba4c7d1fbdb7201",
+    "controller/k8scontroller.py": "5bd2631aeff06b9b537d45e691e36970d702bf0906efe611cdd537ac1444d28c",
+    "common/tunnel_identity.py": "bcc961a9fd6e89e8705c67bad5905ec62404e26ec85d053045150a520857d1ef"
+  },
+  "source_evidence": {
+    "method": "matches_recorded_build_source_sha256",
+    "recorded_file_count": 3
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "image": "r2labuser/ebpf-latency-probe:2026w43",
+  "digest": "sha256:b0444e0d606891f45667c6d05d672be277559a87e4858efc2cd1fd9a0a82e80e",
+  "changes": "Endpoint-scoped TEID mapping and PFCP F-SEID/IMSI correlation, before the IPv4 fragmentation fix.",
+  "source_snapshot_in_this_repository": false
+}

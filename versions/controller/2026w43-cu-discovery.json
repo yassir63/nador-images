@@ -1,0 +1,15 @@
+{
+  "image": "r2labuser/kopf-controller:2026w43-cu-discovery",
+  "digest": "sha256:c08809f7757c26a453ecc55b12deee15e35910cb5495aa7adb0b975b5140a4a9",
+  "changes": "Historical baseline recorded before endpoint-scoped multi-gNB correlation.",
+  "source_origin": "monitoring/controllers/controllersE2E_LatestConfigurable",
+  "recorded_source_files_sha256": {
+    "test_k8scontroller.py": "191c5b920f1a17f6cf198a711cbc67cfd4622aac7cfb98d3fd22b46ea54f77b5",
+    "k8scontroller.py": "ca8e113eb89faf160f91c65f405bac8908e63ccd6c3c7d1bd1a7bbbb4dbdb328",
+    "Dockerfile": "92ddc45eee78447370f4c2f8a53e0be0753c0be935f3730e9288dc1654983947"
+  },
+  "verified_image_files_sha256": {
+    "k8scontroller.py": "ca8e113eb89faf160f91c65f405bac8908e63ccd6c3c7d1bd1a7bbbb4dbdb328"
+  },
+  "source_snapshot_in_this_repository": false
+}

@@ -1,0 +1,15 @@
+{
+  "image": "r2labuser/kpi-calculator-oai:2026w43-radio-scoped",
+  "digest": "sha256:e54fa982dbf7ed05c95dc54e80fd07134f4ffa32e63589ad0890494b0bbfb804",
+  "changes": "Keep RAN component identity when calculating OAI radio KPIs from parser metrics.",
+  "source_origin": "monitoring/kpi-calculator-oai-2026w43",
+  "source_files_sha256": {
+    "kpi-calculator-oai/Dockerfile": "6233a3d3c716b95e65decb15e4138fba4f34769c664d49a715f469cfec23e2d1",
+    "kpi-calculator-oai/kpi_calculator.py": "17e3a440dee7425459c080637ba9566a7d56aac0b11cf4809ec29f4def623fe6"
+  },
+  "source_evidence": {
+    "method": "main_script_matches_published_image_layer",
+    "image_file": "exporter/kpi_calculator.py",
+    "sha256": "17e3a440dee7425459c080637ba9566a7d56aac0b11cf4809ec29f4def623fe6"
+  }
+}

@@ -1,0 +1,8 @@
+.git
+**/__pycache__
+**/*.pyc
+versions
+images.json
+README.md
+LICENSE
+.github

@@ -1,0 +1,16 @@
+{
+  "image": "r2labuser/amf-sniffer:2026w43",
+  "digest": "sha256:cc05f71edec26285490d23844d0caccccff654dd44f7cb1b75e5d17dc1d42386",
+  "changes": "Carry per-gNB tunnel endpoint context for UE/session correlation.",
+  "source_origin": "monitoring/gnb-scoped-mapping-2026w43/amf-sniffer",
+  "source_files_sha256": {
+    "amf-sniffer/Dockerfile": "85b15741ebe7ac7e4b4e7e1a448f01e7c811477c926c2c22b6494e0cff321b2c",
+    "amf-sniffer/amf_sniffer.py": "c8a8f13819abbb7569c53166eac88c5e5e1f5448aee4f56308f43d0f10da1d1a",
+    "common/tunnel_identity.py": "bcc961a9fd6e89e8705c67bad5905ec62404e26ec85d053045150a520857d1ef"
+  },
+  "source_evidence": {
+    "method": "main_script_matches_published_image_layer",
+    "image_file": "app/amf_sniffer.py",
+    "sha256": "c8a8f13819abbb7569c53166eac88c5e5e1f5448aee4f56308f43d0f10da1d1a"
+  }
+}

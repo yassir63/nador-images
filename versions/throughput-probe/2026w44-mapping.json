@@ -1,0 +1,6 @@
+{
+  "image": "r2labuser/ebpf-throughput-probe:2026w44-mapping",
+  "digest": "sha256:1c5f36303fc652eae1a0370098e1f519f4ac8f5328a15842b3fac6b31901b294",
+  "changes": "Add procps/pkill so the controller can replace probes when UE mappings change. Renamed to 2026w44 without rebuilding.",
+  "same_source_as": "2026w44"
+}

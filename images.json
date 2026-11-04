@@ -1,0 +1,74 @@
+{
+  "controller": {
+    "dockerfile": "controller/Dockerfile",
+    "context": ".",
+    "platform": "linux/amd64",
+    "current_version": "2026w45",
+    "version_record": "versions/controller/2026w45.json",
+    "ghcr_image": "ghcr.io/yassir63/kopf-controller:2026w45",
+    "monitoring_target": "components.monitoring-controller"
+  },
+  "throughput-probe": {
+    "dockerfile": "throughput-probe/Dockerfile",
+    "context": ".",
+    "platform": "linux/amd64",
+    "current_version": "2026w44",
+    "version_record": "versions/throughput-probe/2026w44.json",
+    "ghcr_image": "ghcr.io/yassir63/ebpf-throughput-probe:2026w44",
+    "monitoring_target": "probes.throughput"
+  },
+  "latency-probe": {
+    "dockerfile": "latency-probe/Dockerfile",
+    "context": ".",
+    "platform": "linux/amd64",
+    "current_version": "2026w45",
+    "version_record": "versions/latency-probe/2026w45.json",
+    "ghcr_image": "ghcr.io/yassir63/ebpf-latency-probe:2026w45",
+    "monitoring_target": "probes.probe"
+  },
+  "ue-mapper": {
+    "dockerfile": "ue-mapper/Dockerfile",
+    "context": ".",
+    "platform": "linux/amd64",
+    "current_version": "2026w43",
+    "version_record": "versions/ue-mapper/2026w43.json",
+    "ghcr_image": "ghcr.io/yassir63/ue_mapper_api:2026w43",
+    "monitoring_target": "components.ue-mapper-api"
+  },
+  "amf-sniffer": {
+    "dockerfile": "amf-sniffer/Dockerfile",
+    "context": ".",
+    "platform": "linux/amd64",
+    "current_version": "2026w43",
+    "version_record": "versions/amf-sniffer/2026w43.json",
+    "ghcr_image": "ghcr.io/yassir63/amf-sniffer:2026w43",
+    "monitoring_target": "probes.amf_sniffer"
+  },
+  "smf-sniffer": {
+    "dockerfile": "smf-sniffer/Dockerfile",
+    "context": ".",
+    "platform": "linux/amd64",
+    "current_version": "2026w43",
+    "version_record": "versions/smf-sniffer/2026w43.json",
+    "ghcr_image": "ghcr.io/yassir63/smf-sniffer:2026w43",
+    "monitoring_target": "probes.smf_sniffer"
+  },
+  "packet-pairer": {
+    "dockerfile": "packet-pairer/Dockerfile",
+    "context": ".",
+    "platform": "linux/amd64",
+    "current_version": "2026w43",
+    "version_record": "versions/packet-pairer/2026w43.json",
+    "ghcr_image": "ghcr.io/yassir63/packet-pairer:2026w43",
+    "monitoring_target": "components.packet-pairer"
+  },
+  "kpi-calculator-oai": {
+    "dockerfile": "kpi-calculator-oai/Dockerfile",
+    "context": "kpi-calculator-oai",
+    "platform": "linux/amd64",
+    "current_version": "2026w43-radio-scoped",
+    "version_record": "versions/kpi-calculator-oai/2026w43-radio-scoped.json",
+    "ghcr_image": "ghcr.io/yassir63/kpi-calculator-oai:2026w43-radio-scoped",
+    "monitoring_target": "components.kpi-calculator-oai"
+  }
+}

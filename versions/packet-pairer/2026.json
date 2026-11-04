@@ -1,0 +1,17 @@
+{
+  "image": "r2labuser/packet-pairer:2026",
+  "digest": "sha256:718d9798882f69557737cf0dddf69513d643ddd8f6c53dbb7b2860e7f200f673",
+  "changes": "Historical baseline recorded before endpoint-scoped multi-gNB correlation.",
+  "source_origin": "monitoring/controllers/packet-pairer",
+  "recorded_source_files_sha256": {
+    "same_packet_pairer.py": "1c374bb1e0240de3629b1ae8cc660ce8771de4d0d227c8b8d06151a14bd119ae",
+    "Dockerfile": "688928210ed2a4db8dec333d3f416111ed6e3cba1db38c66391e729646441420",
+    "entrypoint-same-packet-pairer.sh": "51eaa218c9820cd89e85bc98bd411cc557df4cd9ef76d0905421ed08ebc5b517"
+  },
+  "verified_image_files_sha256": {
+    "entrypoint-same-packet-pairer.sh": "51eaa218c9820cd89e85bc98bd411cc557df4cd9ef76d0905421ed08ebc5b517",
+    "same_packet_pairer.py": "204a0c381ab4e8893b33478d2c9ca01559a98b990d77785181383c0428de7640"
+  },
+  "source_snapshot_in_this_repository": false,
+  "source_note": "The previous manifest records differing local and published script hashes; use the verified image hash when identifying this historical image."
+}

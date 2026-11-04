@@ -1,0 +1,26 @@
+{
+  "image": "r2labuser/ebpf-latency-probe:2026e2eLatestDebug",
+  "digest": "sha256:a404d711528dd23903b0144e86769bdced734d9abcb254e75c3a8abb1b2ff3c5",
+  "changes": "Historical baseline recorded before endpoint-scoped multi-gNB correlation.",
+  "source_origin": "ebpf5g/gtp/Latency/gtpLatencyDynamicE2E_Latest",
+  "recorded_source_files_sha256": {
+    "entrypoint-latency.sh": "5b874919dd267fdd40ca43026eff3e0bd07893659ff18c6eb7205761f18056d9",
+    "gtp_latency_user.c": "329c78126f598267794f24e659694bce0de685131dc953e967c8dfa549648472",
+    "Dockerfile": "9c4ed964537e5d38f25ed9e3efa6a5a3c9bb2d8d9478b0e598b22031bfcd1281",
+    "Makefile": "e2890196012d44f2749c9bb11bb02197d0654e0670277f3f1392819ce0681682",
+    "exporter.py": "0d238901e986f556de2f3da36ef29aa82e88016bb50e7fb88b20995cbf8bc489",
+    "latency_socket_server.py": "5b316069bd4852e7f8ff8c5275c79277a7c0af3c366d6b55369b760eb759ce0c",
+    "gtp_latency.h": "ed7c5954f2030392edb4fc36c3a2ec2ca8046432f6b3da0a21a925a8be2e2786",
+    "gtp_latency.bpf.c": "43d6a2d95ab7a37813bd4cbece3430b6104661fe11e9ebaeeae931851a8156ab"
+  },
+  "verified_image_files_sha256": {
+    "gtp_latency.h": "ed7c5954f2030392edb4fc36c3a2ec2ca8046432f6b3da0a21a925a8be2e2786",
+    "gtp_latency.bpf.c": "43d6a2d95ab7a37813bd4cbece3430b6104661fe11e9ebaeeae931851a8156ab",
+    "latency_socket_server.py": "5b316069bd4852e7f8ff8c5275c79277a7c0af3c366d6b55369b760eb759ce0c",
+    "entrypoint-latency.sh": "5b874919dd267fdd40ca43026eff3e0bd07893659ff18c6eb7205761f18056d9",
+    "gtp_latency_user.c": "329c78126f598267794f24e659694bce0de685131dc953e967c8dfa549648472",
+    "exporter.py": "0d238901e986f556de2f3da36ef29aa82e88016bb50e7fb88b20995cbf8bc489",
+    "Makefile": "e2890196012d44f2749c9bb11bb02197d0654e0670277f3f1392819ce0681682"
+  },
+  "source_snapshot_in_this_repository": false
+}

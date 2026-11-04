@@ -1,0 +1,23 @@
+{
+  "image": "r2labuser/ebpf-throughput-probe:2026w44",
+  "digest": "sha256:1c5f36303fc652eae1a0370098e1f519f4ac8f5328a15842b3fac6b31901b294",
+  "changes": "Adds procps/pkill for probe replacement when UE mappings change. Keeps endpoint-scoped counters and first-fragment accounting from 2026w43-fragments.",
+  "source_origin": "monitoring/throughput-integration-2026w43/throughput-probe",
+  "source_files_sha256": {
+    "throughput-probe/Dockerfile": "058e06ba22c1c09f8a104bfb34915280a04526731e8391ca8c136b98ebafc7d6",
+    "throughput-probe/Makefile": "1e3f73f1bbc9e140db454c2b425ed3a9cbd4e5dadb67b4d10488daab2dbca3dc",
+    "throughput-probe/entrypoint-throughput.sh": "e7e773ad391037cd7925d610e5f6b3550773189c8cb9032a8ce4fdee4f8e85a3",
+    "throughput-probe/exporter.py": "2293de0864c35ccb54c880ba1cbe21890fa7c476daee58530e1af0633c0d9e40",
+    "throughput-probe/gtp_packet.h": "146f87546ad5dec6d6990105537ddc5bbc4632e0867bada4ed83ba00eba2d1fd",
+    "throughput-probe/gtp_throughput.bpf.c": "7d6e05d2566d7d06eefe7c2f6d9ca79f74dfec690c7f4b7f4fc53bc7279a8210",
+    "throughput-probe/gtp_throughput_user.c": "41915f31aac1aa2613d41612fd31da6728c0fe78ba846424ee06ed0b6e9e1d68",
+    "common/tunnel_identity.py": "bcc961a9fd6e89e8705c67bad5905ec62404e26ec85d053045150a520857d1ef"
+  },
+  "source_evidence": {
+    "method": "matches_recorded_build_source_sha256",
+    "recorded_file_count": 8
+  },
+  "aliases": [
+    "r2labuser/ebpf-throughput-probe:2026w44-mapping"
+  ]
+}

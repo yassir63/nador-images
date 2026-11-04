@@ -1,0 +1,14 @@
+{
+  "image": "r2labuser/smf-sniffer:2026w10",
+  "digest": "sha256:8106afd252b1f3de4844d5cf88f2ff0fdb2643b03917fcec6ee8baaca69768bb",
+  "changes": "Historical baseline recorded before endpoint-scoped multi-gNB correlation.",
+  "source_origin": "monitoring/sliceawareness/smfsniffer-2026w10",
+  "recorded_source_files_sha256": {
+    "smf_sniffer.py": "fcbb9f7549dcd63dd227577c48f21b5e27977e0915152db1a81ab9b96405cf76",
+    "Dockerfile": "07d24be2c025b4f834d786a64b28f21d8db496ef217bcd57ab71f046de22f477"
+  },
+  "verified_image_files_sha256": {
+    "smf_sniffer.py": "fcbb9f7549dcd63dd227577c48f21b5e27977e0915152db1a81ab9b96405cf76"
+  },
+  "source_snapshot_in_this_repository": false
+}

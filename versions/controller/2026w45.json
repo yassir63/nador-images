@@ -1,0 +1,25 @@
+{
+  "image": "ghcr.io/yassir63/kopf-controller:2026w45",
+  "digest": null,
+  "status": "prepared_not_built",
+  "changes": "Build directly from official Python 3.11 with explicit dependencies and kubectl; remove inheritance from older controller images. Default the probe image to GHCR; packet processing, pod discovery and shared tunnel identity unchanged.",
+  "previous_version": "2026w44",
+  "base_image": "python:3.11-slim",
+  "kubectl_version": "v1.29.0",
+  "python_dependencies": [
+    "kopf",
+    "kubernetes",
+    "requests"
+  ],
+  "source_files_sha256": {
+    "controller/Dockerfile": "7d306266f86f6fc0beedc8f4067d49ec14fd4e656d1eb5d1ff1ce9701c8f1c50",
+    "controller/k8scontroller.py": "5d4a385a7fafe7e51e9f47e517a20970ca65fbeb101557cf4853707c4b38b572",
+    "common/tunnel_identity.py": "bcc961a9fd6e89e8705c67bad5905ec62404e26ec85d053045150a520857d1ef"
+  },
+  "validation": {
+    "image_build": "not_run",
+    "runtime": "not_run",
+    "runtime_processing_logic_unchanged": true,
+    "probe_image_default": "ghcr.io/yassir63/ebpf-latency-probe:2026w45"
+  }
+}

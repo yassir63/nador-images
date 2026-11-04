@@ -1,0 +1,16 @@
+{
+  "image": "r2labuser/smf-sniffer:2026w43",
+  "digest": "sha256:20580561a2e1b4715b7ab1e396c2e6865b01cdc3ef2a696da6786e8db830f593",
+  "changes": "Preserve endpoint-scoped session correlation and SMF/UPF F-SEID metadata.",
+  "source_origin": "monitoring/gnb-scoped-mapping-2026w43/smf-sniffer",
+  "source_files_sha256": {
+    "smf-sniffer/Dockerfile": "fa2bc4a568ea38ac506ac016ffcf0472365517162fd69236fff97a8ba91f36ff",
+    "smf-sniffer/smf_sniffer.py": "ff1dce56ebec98d9d2835ae43168d5e8b5019955ad3eb3627b8f2f7f75298f99",
+    "common/tunnel_identity.py": "bcc961a9fd6e89e8705c67bad5905ec62404e26ec85d053045150a520857d1ef"
+  },
+  "source_evidence": {
+    "method": "main_script_matches_published_image_layer",
+    "image_file": "app/smf_sniffer.py",
+    "sha256": "ff1dce56ebec98d9d2835ae43168d5e8b5019955ad3eb3627b8f2f7f75298f99"
+  }
+}

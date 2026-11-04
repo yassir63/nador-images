@@ -1,0 +1,14 @@
+{
+  "image": "r2labuser/amf-sniffer:2026w42",
+  "digest": "sha256:c52b8467a956fcb726645e18250ddf52eacc7d77d18862fd414bbd79b92f37a9",
+  "changes": "Historical baseline recorded before endpoint-scoped multi-gNB correlation.",
+  "source_origin": "monitoring/sliceawareness/amfsniffer-2026w42",
+  "recorded_source_files_sha256": {
+    "Dockerfile": "3fa6b2685575aedfb05fdce73d49326f08c0393542ab14e8be01cbd1fe32f6a9",
+    "amf_sniffer.py": "18264b8cfdd556b1a4ae720b165dc4d702ef33f80911b0d3e79ed66ca6944fbc"
+  },
+  "verified_image_files_sha256": {
+    "amf_sniffer.py": "18264b8cfdd556b1a4ae720b165dc4d702ef33f80911b0d3e79ed66ca6944fbc"
+  },
+  "source_snapshot_in_this_repository": false
+}

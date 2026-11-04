@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+PACKET_PAIRER_METRICS_PORT="${PACKET_PAIRER_METRICS_PORT:-9200}"
+PACKET_PAIRER_METRICS_PATH="${PACKET_PAIRER_METRICS_PATH:-/metrics}"
+PACKET_PAIRER_PORT="${PACKET_PAIRER_PORT:-9201}"
+
+echo "[same-packet-pairer] PACKET_PAIRER_METRICS_PORT=${PACKET_PAIRER_METRICS_PORT}"
+echo "[same-packet-pairer] PACKET_PAIRER_METRICS_PATH=${PACKET_PAIRER_METRICS_PATH}"
+echo "[same-packet-pairer] PACKET_PAIRER_PORT=${PACKET_PAIRER_PORT}"
+
+exec python3 /app/same_packet_pairer.py \
+  --port "${PACKET_PAIRER_METRICS_PORT}" \
+  --metrics-path "${PACKET_PAIRER_METRICS_PATH}" \
+  --udp-port "${PACKET_PAIRER_PORT}"

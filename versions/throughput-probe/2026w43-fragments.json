@@ -1,0 +1,6 @@
+{
+  "image": "r2labuser/ebpf-throughput-probe:2026w43-fragments",
+  "digest": "sha256:2806f31dd538de15959aa6966a281e6bc64d50b9e323abf36a35bf9575ac7e2b",
+  "changes": "Account for outer IPv4 fragments using a GTP packet identity cache; handle reversed fragment order and reject untracked TEIDs.",
+  "source_snapshot_in_this_repository": false
+}

@@ -1,0 +1,17 @@
+{
+  "image": "r2labuser/packet-pairer:2026w43",
+  "digest": "sha256:661cbdea466430a5d73a2cdee45e8d34f48fa0adbc5b7ab9b88eab851f4ead52",
+  "changes": "Scope packet attribution by tunnel endpoint and direction to avoid cross-gNB TEID collisions.",
+  "source_origin": "monitoring/gnb-scoped-mapping-2026w43/packet-pairer",
+  "source_files_sha256": {
+    "packet-pairer/Dockerfile": "ebc1cf4518c1f60a81a200b4425402de2ba6d369d941791ae8f021f67639e273",
+    "packet-pairer/entrypoint-same-packet-pairer.sh": "51eaa218c9820cd89e85bc98bd411cc557df4cd9ef76d0905421ed08ebc5b517",
+    "packet-pairer/same_packet_pairer.py": "9fe54cb489eae0b4ca626f24aff96bff66c5ebfa38f3ad112b765b5135fa1db3",
+    "common/tunnel_identity.py": "bcc961a9fd6e89e8705c67bad5905ec62404e26ec85d053045150a520857d1ef"
+  },
+  "source_evidence": {
+    "method": "main_script_matches_published_image_layer",
+    "image_file": "app/same_packet_pairer.py",
+    "sha256": "9fe54cb489eae0b4ca626f24aff96bff66c5ebfa38f3ad112b765b5135fa1db3"
+  }
+}

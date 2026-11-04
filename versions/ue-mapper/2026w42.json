@@ -1,0 +1,14 @@
+{
+  "image": "r2labuser/ue_mapper_api:2026w42",
+  "digest": "sha256:bddff03684b9a7122a469bfa74a6fe8da2206456e2e3f9cd32ac93775477cc2a",
+  "changes": "Historical baseline recorded before endpoint-scoped multi-gNB correlation.",
+  "source_origin": "monitoring/sliceawareness/ue_mapper-2026w42",
+  "recorded_source_files_sha256": {
+    "Dockerfile": "7e23fd1dd2b44ea0490621884f2383b74709822bba0760218932ac808804f3e0",
+    "ue_mapper_api.py": "340eaea3f21477a4b670d7dac492e53758d5fa3fd13b062d2d55f3641796268a"
+  },
+  "verified_image_files_sha256": {
+    "ue_mapper_api.py": "340eaea3f21477a4b670d7dac492e53758d5fa3fd13b062d2d55f3641796268a"
+  },
+  "source_snapshot_in_this_repository": false
+}
