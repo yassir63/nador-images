@@ -1,6 +1,6 @@
-# FiveG Lens Images
+# NextG Lens Images
 
-Source code for the monitoring containers used by [FiveG Lens](https://github.com/yassir63/fiveg-lens).
+Source code for the monitoring containers used by [NextG Lens](https://github.com/yassir63/nextg-lens).
 
 The component runtime sources originate from the recorded local build directories.
 The controller default probe reference now points to GHCR; packet processing and discovery logic are unchanged.
@@ -65,7 +65,7 @@ Inherited code, container bases and external dependencies retain their original 
 ## Monitoring update proposals
 
 After the selected images all build, pass checks and publish, the workflow proposes their commit tags
-in `fiveg-lens/src/fiveg_lens/assets/images.json`. Each build batch has its own pull request, containing
+in the NextG Lens monitoring image manifest. Each build batch has its own pull request, containing
 source links and image digests. It changes no other monitoring files and never merges or deploys automatically.
 Without `MONITORING_REPO_TOKEN`, image publication still works and this optional step is skipped.
-The token must grant Contents and Pull requests write access to the `fiveg-lens` repository.
+The token must grant Contents and Pull requests write access to the `nextg-lens` repository.
