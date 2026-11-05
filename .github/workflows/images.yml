@@ -136,7 +136,7 @@ jobs:
         if: steps.authorization.outputs.enabled == 'true'
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
-          repository: ${{ github.repository_owner }}/fiveg-lens
+          repository: ${{ github.repository_owner }}/nextg-lens
           ref: main
           path: monitoring
           token: ${{ secrets.MONITORING_REPO_TOKEN }}
@@ -146,7 +146,7 @@ jobs:
         run: |
           python3 images/.github/update_monitoring.py \
             --images images/images.json --records records \
-            --manifest monitoring/src/fiveg_lens/assets/images.json \
+            --manifest monitoring/src/nextg_lens/assets/images.json \
             --body-file image-update.md
       - name: Propose monitoring update
         if: steps.authorization.outputs.enabled == 'true'
@@ -156,7 +156,7 @@ jobs:
           path: monitoring
           base: main
           branch: automation/images-${{ github.sha }}
-          add-paths: src/fiveg_lens/assets/images.json
+          add-paths: src/nextg_lens/assets/images.json
           commit-message: Update default monitoring image builds
           title: Update default monitoring images
           body-path: ${{ github.workspace }}/image-update.md
