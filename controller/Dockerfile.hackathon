@@ -1,0 +1,14 @@
+FROM python:3.11.16-slim-trixie@sha256:174bec68e0451bffabbb08c7d5d21c6b253f772d81d52b9558af97bb3159b761
+
+RUN apt-get update \
+    && apt-get install -y curl=8.14.1-2+deb13u5 ca-certificates=20250419 \
+    && curl -fL -o /usr/local/bin/kubectl https://dl.k8s.io/release/v1.29.0/bin/linux/amd64/kubectl \
+    && chmod +x /usr/local/bin/kubectl \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+COPY controller/requirements-hackathon.txt ./
+RUN pip install --no-cache-dir -r requirements-hackathon.txt && pip check
+
+COPY controller/k8scontroller.py common/tunnel_identity.py /app/
+CMD ["python", "/app/k8scontroller.py"]

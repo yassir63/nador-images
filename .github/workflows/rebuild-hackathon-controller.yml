@@ -1,0 +1,42 @@
+name: Rebuild hackathon controller from source
+
+on:
+  push:
+    branches: [rebuild-hackathon-controller]
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  controller:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+      - name: Build and verify controller runtime
+        run: |
+          set -euo pipefail
+          image="ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/kopf-controller:rebuild-${GITHUB_SHA}"
+          docker build --pull --platform linux/amd64 -f controller/Dockerfile.hackathon \
+            --label "org.opencontainers.image.source=https://github.com/$GITHUB_REPOSITORY" \
+            --label "org.opencontainers.image.revision=$GITHUB_SHA" -t "$image" .
+          docker run --rm --network none --entrypoint python "$image" -c '
+          from importlib.metadata import version
+          from pathlib import Path
+          import py_compile
+          for line in Path("requirements-hackathon.txt").read_text().splitlines():
+              if line and not line.startswith("#"):
+                  name, expected = line.split("==")
+                  assert version(name) == expected, name
+          py_compile.compile("k8scontroller.py", doraise=True)
+          '
+          docker run --rm --network none --entrypoint kubectl "$image" version --client
+          echo "IMAGE=$image" >> "$GITHUB_ENV"
+      - name: Publish test image
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          printf '%s' "$GHCR_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+          docker push "$IMAGE"
+          docker buildx imagetools inspect "$IMAGE" >> "$GITHUB_STEP_SUMMARY"
