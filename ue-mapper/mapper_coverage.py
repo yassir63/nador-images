@@ -90,7 +90,7 @@ class MapperMetrics:
                     if imsi:
                         group['ues'].add(imsi)
                     missing = {'imsi': not imsi, 'ue_ip': not first_present(sources, 'ue_ip'),
-                               'slice': not raw_sst or not raw_sd or sid == 'unknown',
+                               'slice': not raw_sst or sid == 'unknown',
                                'ul_teid': not ul, 'dl_teid': not dl,
                                'ul_teid_record': bool(ul) and not ul_record,
                                'dl_teid_record': bool(dl) and not dl_record}

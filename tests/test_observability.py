@@ -86,7 +86,10 @@ def test_mapper_endpoint_scoped_coverage():
             del record['sd']
     group = MapperMetrics(redis).snapshot()['01:ffffff']
     assert group['ues'] == {'a','b'}
-    assert group['missing']['slice'] == 2
+    assert group['missing']['slice'] == 0
+    records['pfcp-tunnel:10.0.0.1|0x00000001']['sst'] = ''
+    records['pfcp-tunnel:10.0.0.2|0x00000002']['sst'] = ''
+    assert MapperMetrics(redis).snapshot()['01:ffffff']['missing']['slice'] == 1
     assert MapperMetrics(redis,max_records=1).snapshot() is None
 
 
