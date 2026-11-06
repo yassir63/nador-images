@@ -1,0 +1,37 @@
+name: Publish OAI KPI calculator test image
+
+on:
+  push:
+    branches: [test-oai-kpi-calculator]
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  calculator:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+      - name: Build and verify calculator
+        run: |
+          set -euo pipefail
+          image="ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/kpi-calculator-oai:test-${GITHUB_SHA}"
+          docker build --pull --platform linux/amd64 -t "$image" \
+            --label "org.opencontainers.image.source=https://github.com/$GITHUB_REPOSITORY" \
+            --label "org.opencontainers.image.revision=$GITHUB_SHA" kpi-calculator-oai
+          docker run --rm --network none --entrypoint python3 "$image" -c '
+          from pathlib import Path
+          source = Path("/exporter/kpi_calculator.py").read_text()
+          compile(source, "kpi_calculator.py", "exec")
+          assert "mac_throughput" not in source and "MAC_THROUGHPUT" not in source
+          '
+          echo "IMAGE=$image" >> "$GITHUB_ENV"
+      - name: Publish test tag
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          printf '%s' "$GHCR_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+          docker push "$IMAGE"
+          docker buildx imagetools inspect "$IMAGE" >> "$GITHUB_STEP_SUMMARY"

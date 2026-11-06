@@ -7,8 +7,6 @@
 Prometheus exporter which exports RAN KPI.
 For use with the 5G-MONARCH project and OAI.
 """
-from collections import defaultdict
-from datetime import datetime, timedelta, timezone
 import os
 import logging
 import time
@@ -23,14 +21,9 @@ MONARCH_THANOS_URL = os.getenv("MONARCH_THANOS_URL")
 DEFAULT_UPDATE_PERIOD = 1
 UPDATE_PERIOD = int(os.environ.get('UPDATE_PERIOD', DEFAULT_UPDATE_PERIOD))
 EXPORTER_PORT = 9000
-TIME_RANGE = os.getenv("TIME_RANGE", "1s")
 
 
 # Prometheus variables
-MAC_THROUGHPUT = prom.Gauge(
-    'mac_throughput', 'MAC throughput per radio and UE RNTI (bits/sec)',
-    ['source_namespace', 'ran_component', 'rnti', 'direction'],
-)
 NUMBER_UES = prom.Gauge('number_ues', 'Number of connected UEs in the gNB')
 SATURATION_PERCENTAGE = prom.Gauge('saturation_percentage', 'Percentage of total gNB PRBs currently scheduled (NPRB sum / total PRBs * 100)', ['rnti'])
 # SATURATION_PERCENTAGE = prom.Gauge('saturation_percentage', 'Percentage of total gNB PRBs currently scheduled (NPRB sum / total PRBs * 100)')
@@ -61,67 +54,6 @@ def query_prometheus(params, url):
         log.warning("No data available!")
 
 
-def _aggregate_by_radio_rnti(data):
-    """
-    Sums LCID bytes within one source namespace, radio service and RNTI.
-    Returns: {(source_namespace, ran_component, rnti): value}
-    """
-    agg = defaultdict(float)
-    for r in data:
-        rnti = r["metric"].get("rnti")
-        value = float(r["value"][1])
-        if rnti:
-            identity = (r["metric"].get("namespace", ""), r["metric"].get("service", ""), rnti)
-            agg[identity] += value
-    return agg
-
-def get_mac_throughput_per_rnti_and_direction(direction):
-    """
-    Returns throughput per UE RNTI for the specified direction: 'uplink' or 'downlink'.
-    Uses Prometheus metrics: oai_gnb_mac_lcid_tx_bytes or oai_gnb_mac_lcid_rx_bytes
-    Returns {(source_namespace, ran_component, rnti): value (bits/sec)}
-    """
-    if direction == "downlink":
-        metric = "oai_gnb_mac_lcid_tx_bytes"
-    elif direction == "uplink":
-        metric = "oai_gnb_mac_lcid_rx_bytes"
-    else:
-        log.warning(f"Invalid MAC direction: {direction}")
-        return {}
-
-    utc = timezone.utc
-    end_time = datetime.now(utc)
-    start_time = end_time - timedelta(seconds=int(TIME_RANGE[:-1]))
-
-    end_data = query_prometheus({
-        "query": f"{metric}",
-        "time": end_time.replace(tzinfo=None).timestamp()
-    }, MONARCH_THANOS_URL)
-
-    start_data = query_prometheus({
-        "query": f"{metric}",
-        "time": start_time.replace(tzinfo=None).timestamp()
-    }, MONARCH_THANOS_URL)
-
-    # Aggregate LCIDs without combining different radios using the same RNTI.
-    end_agg = _aggregate_by_radio_rnti(end_data)
-    start_agg = _aggregate_by_radio_rnti(start_data)
-
-    throughput_per_rnti = {}
-
-    for identity, end_value in end_agg.items():
-        start_value = start_agg.get(identity)
-
-        if start_value is None:
-            continue
-
-        delta_bytes = end_value - start_value
-        bits_per_sec = (delta_bytes * 8) / int(TIME_RANGE[:-1])
-
-        throughput_per_rnti[identity] = bits_per_sec
-
-    return throughput_per_rnti
-   
 def get_number_ues():
     rntis = set()
     metric = "oai_gnb_mac_lcid_tx_bytes"
@@ -279,7 +211,6 @@ def main():
         return 
 
     log.info(f"Monarch Thanos URL: {MONARCH_THANOS_URL}")
-    log.info(f"Time range: {TIME_RANGE}")
     log.info(f"Update period: {UPDATE_PERIOD}")
     prom.start_http_server(EXPORTER_PORT)
 
@@ -289,15 +220,6 @@ def main():
         except Exception as e:
             log.error(f"Failing to run KPI computation: {e}")
         time.sleep(UPDATE_PERIOD)
-
-def export_mac_throughput_to_prometheus(identity, direction, value):
-    source_namespace, ran_component, rnti = identity
-    value_mbits = round(value / 10 ** 6, 6)
-    log.info(f"RNTI={rnti} | DIR={direction} | RATE (Mbps)={value_mbits}")
-    MAC_THROUGHPUT.labels(
-        source_namespace=source_namespace, ran_component=ran_component,
-        rnti=rnti, direction=direction,
-    ).set(value)
 
 def export_number_ues_to_prometheus(value):
     log.info(f"VALUE ={value}")
@@ -312,17 +234,8 @@ def export_saturation_percentage_to_prometheus(rnti, value):
     SATURATION_PERCENTAGE.labels(rnti=rnti).set(value)
 
 def run_kpi_computation():
-    # Clear stale labelled metrics before each update so removed UEs do not remain exported.
-    MAC_THROUGHPUT.clear()
+    # Do not retain series for UEs that are no longer present.
     SATURATION_PERCENTAGE.clear()
-
-    directions = ["uplink", "downlink"]
-
-    for direction in directions:
-        mac_throughput = get_mac_throughput_per_rnti_and_direction(direction)
-        for identity, value in mac_throughput.items():
-            export_mac_throughput_to_prometheus(identity, direction, value)
-    
     number_ues = get_number_ues()
     export_number_ues_to_prometheus(number_ues)
 
