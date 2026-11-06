@@ -34,13 +34,13 @@ def _values(layer, names: tuple[str, ...]) -> list[object]:
     return values
 
 
-def _positive_int(value, maximum: int) -> str:
+def _bounded_int(value, maximum: int, *, minimum: int = 1) -> str:
     try:
         text = str(value).strip().split()[0]
         number = int(text, 0)
     except (IndexError, TypeError, ValueError):
         return ""
-    return str(number) if 0 < number <= maximum else ""
+    return str(number) if minimum <= number <= maximum else ""
 
 
 def _layer_text(layer) -> str:
@@ -72,7 +72,7 @@ def _response_outcome(layer) -> str:
 
 def _session_ids(layer) -> frozenset[str]:
     ids = {
-        _positive_int(value, 255)
+        _bounded_int(value, 255)
         for value in _values(layer, ("pDUSessionID", "pdu_session_id", "pdusessionid"))
     }
     ids.discard("")
@@ -81,11 +81,11 @@ def _session_ids(layer) -> frozenset[str]:
 
 def _ue_key(layer) -> str:
     amf = next((value for value in (
-        _positive_int(item, (1 << 40) - 1)
+        _bounded_int(item, (1 << 40) - 1, minimum=0)
         for item in _values(layer, ("aMF_UE_NGAP_ID", "amf_ue_ngap_id"))
     ) if value), "")
     ran = next((value for value in (
-        _positive_int(item, (1 << 40) - 1)
+        _bounded_int(item, (1 << 32) - 1, minimum=0)
         for item in _values(layer, ("rAN_UE_NGAP_ID", "ran_ue_ngap_id"))
     ) if value), "")
     return f"{amf}:{ran}" if amf and ran else ""

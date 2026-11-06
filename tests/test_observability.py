@@ -38,6 +38,17 @@ def test_ngap_scoped_matching():
     assert b'ngap_pdu_session_setup_duration_seconds_count{outcome="success"} 1.0' in generate_latest(tracker.registry)
 
 
+def test_ngap_matches_zero_ran_ue_id():
+    class ZeroRanIdLayer(Layer):
+        def get_field_values(self, name):
+            return ['0'] if name == 'rAN_UE_NGAP_ID' else super().get_field_values(name)
+
+    tracker = PduSessionSetupTracker(clock=lambda: 1)
+    assert tracker.observe_layer(ZeroRanIdLayer(), observed_at=1, scope='gnb-a') == 'request'
+    assert tracker.observe_layer(ZeroRanIdLayer(True), observed_at=2, scope='gnb-a') == 'success'
+    assert b'ngap_pdu_session_setup_duration_seconds_count{outcome="success"} 1.0' in generate_latest(tracker.registry)
+
+
 def test_pfcp_exact_peers_and_expiry():
     tracker = PFCPSessionEstablishmentTracker(clock=lambda: 1)
     assert tracker.observe(50, 3, 'smf|upf-a', observed_at=1) == 'request'
