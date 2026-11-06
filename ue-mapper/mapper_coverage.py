@@ -78,8 +78,10 @@ class MapperMetrics:
                     ul_record = hashes.get(scoped_key(record.get('upf_n3_ip'), ul), {})
                     dl_record = hashes.get(scoped_key(record.get('gnb_n3_ip'), dl), {})
                     sources = (record, ul_record, dl_record)
-                    sst = hex_field(first_present(sources, 'sst'), 2)
-                    sd = hex_field(first_present(sources, 'sd'), 6)
+                    raw_sst = first_present(sources, 'sst')
+                    raw_sd = first_present(sources, 'sd')
+                    sst = hex_field(raw_sst or '01', 2)
+                    sd = hex_field(raw_sd or 'ffffff', 6)
                     sid = sst + ':' + sd if sst and sd else 'unknown'
                     group = groups[sid]
                     group['records'] += 1
@@ -88,7 +90,8 @@ class MapperMetrics:
                     if imsi:
                         group['ues'].add(imsi)
                     missing = {'imsi': not imsi, 'ue_ip': not first_present(sources, 'ue_ip'),
-                               'slice': sid == 'unknown', 'ul_teid': not ul, 'dl_teid': not dl,
+                               'slice': not raw_sst or not raw_sd or sid == 'unknown',
+                               'ul_teid': not ul, 'dl_teid': not dl,
                                'ul_teid_record': bool(ul) and not ul_record,
                                'dl_teid_record': bool(dl) and not dl_record}
                     for field, absent in missing.items():

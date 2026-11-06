@@ -81,6 +81,12 @@ def test_mapper_endpoint_scoped_coverage():
         def execute(self): return [records[key] for key in self.keys]
     redis.pipeline.side_effect = lambda **kw: Pipe()
     assert MapperMetrics(redis).snapshot()['01:ffffff']['ues'] == {'a','b'}
+    for key, record in records.items():
+        if key.startswith('pfcp-tunnel:'):
+            del record['sd']
+    group = MapperMetrics(redis).snapshot()['01:ffffff']
+    assert group['ues'] == {'a','b'}
+    assert group['missing']['slice'] == 2
     assert MapperMetrics(redis,max_records=1).snapshot() is None
 
 
