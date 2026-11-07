@@ -12,9 +12,14 @@ RUN dnf install -y bpftool kernel-devel git dos2unix python3 python3-pip clang l
     && dnf install -y libbpf-devel json-c json-c-devel \
     && dnf clean all
 
-RUN dnf install -y \
-    https://download.rockylinux.org/stg/rocky/9/devel/x86_64/os/Packages/k/kernel-headers-${KERNEL_VER}.rpm \
-    https://download.rockylinux.org/stg/rocky/9/devel/x86_64/os/Packages/k/kernel-devel-${KERNEL_VER}.rpm
+RUN curl -fL --retry 3 -o /tmp/kernel-headers.rpm \
+        https://dl.rockylinux.org/vault/rocky/9.5/devel/x86_64/os/Packages/k/kernel-headers-${KERNEL_VER}.rpm \
+    && curl -fL --retry 3 -o /tmp/kernel-devel.rpm \
+        https://dl.rockylinux.org/vault/rocky/9.5/devel/x86_64/os/Packages/k/kernel-devel-${KERNEL_VER}.rpm \
+    && echo '8f1948a1a5de7e7a5db551dfce1881a1888750a212a286159c707ff7d8962363  /tmp/kernel-headers.rpm' | sha256sum -c - \
+    && echo '70b340811bf68e3a826f7ed898b310c1d98917ff9df35456e65874582afdae81  /tmp/kernel-devel.rpm' | sha256sum -c - \
+    && dnf install -y /tmp/kernel-headers.rpm /tmp/kernel-devel.rpm \
+    && rm /tmp/kernel-headers.rpm /tmp/kernel-devel.rpm
 
 WORKDIR /app
 COPY latency-probe-rocky/requirements.txt ./
