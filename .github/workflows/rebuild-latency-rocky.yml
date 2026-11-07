@@ -15,6 +15,11 @@ jobs:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
       - name: Verify original source checksums
         run: sha256sum --check latency-probe-rocky/SHA256SUMS
+      - name: Record original installed package inventory
+        run: |
+          docker run --rm --platform linux/amd64 --network none --entrypoint rpm \
+            r2labuser/ebpf-latency-probe@sha256:b0444e0d606891f45667c6d05d672be277559a87e4858efc2cd1fd9a0a82e80e \
+            -qa | sort
       - name: Build from the original official base
         run: |
           set -euo pipefail

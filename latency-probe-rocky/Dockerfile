@@ -4,6 +4,9 @@ ARG LIBBPF_COMMIT=dd92bef7f6c7a00bb0312554119b6d9cf38e4f32
 ARG BPFTOOL_COMMIT=12701baaac934e2f65a6deef890f8b0b7eae4edf
 ARG KERNEL_VER=5.14.0-503.19.1.el9_5.x86_64
 
+RUN rm -f /etc/yum.repos.d/rocky*.repo \
+    && printf '[baseos]\nname=Rocky 9.5 BaseOS archive\nbaseurl=https://dl.rockylinux.org/vault/rocky/9.5/BaseOS/$basearch/os/\ngpgcheck=1\ngpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-Rocky-9\n[appstream]\nname=Rocky 9.5 AppStream archive\nbaseurl=https://dl.rockylinux.org/vault/rocky/9.5/AppStream/$basearch/os/\ngpgcheck=1\ngpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-Rocky-9\n[devel]\nname=Rocky 9.5 devel archive\nbaseurl=https://dl.rockylinux.org/vault/rocky/9.5/devel/$basearch/os/\nenabled=0\ngpgcheck=1\ngpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-Rocky-9\n' > /etc/yum.repos.d/rocky-archive.repo
+
 RUN dnf install -y bpftool kernel-devel git dos2unix python3 python3-pip clang llvm \
         elfutils-libelf-devel libcap-devel gcc glibc-devel glibc-devel.i686 \
         glibc-headers make perf nano iproute-tc jq \
