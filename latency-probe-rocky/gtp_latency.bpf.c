@@ -284,7 +284,8 @@ static __noinline int is_gtp_packet(struct __sk_buff *skb) {
 
     if (bpf_skb_load_bytes(skb, sizeof(eth), &iph, sizeof(iph)) < 0)
         return 0;
-    if (iph.protocol != IPPROTO_UDP)
+    // Only first fragments contain the UDP/GTP headers identifying the tunnel.
+    if (iph.protocol != IPPROTO_UDP || (bpf_ntohs(iph.frag_off) & 0x1fff))
         return 0;
 
     int ip_header_len = iph.ihl * 4;
@@ -368,7 +369,7 @@ static __noinline int parse_teid_and_payload_offset(
 
     if (bpf_skb_load_bytes(skb, sizeof(eth), &iph, sizeof(iph)) < 0)
         return -1;
-    if (iph.protocol != IPPROTO_UDP)
+    if (iph.protocol != IPPROTO_UDP || (bpf_ntohs(iph.frag_off) & 0x1fff))
         return -1;
 
     int ip_header_len = iph.ihl * 4;
@@ -417,6 +418,12 @@ static __noinline void parse_inner_ipv4_flow(
     if (bpf_skb_load_bytes(skb, offset, &inner_iph, sizeof(inner_iph)) < 0)
         return;
 
+    int ip_len = inner_iph.ihl * 4;
+    int ip_packet_len = bpf_ntohs(inner_iph.tot_len);
+    // Inner IP fragments lack the complete TCP segment length; do not guess it.
+    if (ip_len < 20 || ip_packet_len < ip_len || (bpf_ntohs(inner_iph.frag_off) & 0x3fff))
+        return;
+
     struct flow_event_t evt = {};
     evt.teid = teid;
     evt.src_ip = inner_iph.saddr;
@@ -427,7 +434,6 @@ static __noinline void parse_inner_ipv4_flow(
     evt.direction = direction;
     evt.timestamp_ns = bpf_ktime_get_ns();
 
-    int ip_len = inner_iph.ihl * 4;
     int l4_offset = offset + ip_len;
     __u8 configured_mode = get_latency_mode();
     __u8 probe_role = get_probe_role();
@@ -455,16 +461,17 @@ static __noinline void parse_inner_ipv4_flow(
 
         if (bpf_skb_load_bytes(skb, l4_offset, &tcp_hdr, sizeof(tcp_hdr)) >= 0) {
             int tcp_hdr_len = (tcp_hdr.offset >> 4) * 4;
-            int tcp_payload_offset = l4_offset + tcp_hdr_len;
-            int tcp_payload_len = (int)skb->len - tcp_payload_offset;
+            if (tcp_hdr_len < 20 || ip_packet_len < ip_len + tcp_hdr_len ||
+                l4_offset + tcp_hdr_len > skb->len)
+                return;
+            // The inner IP length covers the whole TCP segment, including across outer fragments.
+            int tcp_payload_len = ip_packet_len - ip_len - tcp_hdr_len;
             __u32 seq = bpf_ntohl(tcp_hdr.seq);
             __u32 ack_seq = bpf_ntohl(tcp_hdr.ack_seq);
             __u8 ack_flag = tcp_hdr.flags & 0x10;
             __u32 payload_len_u32 = 0;
             __u32 seq_advance = 0;
 
-            if (tcp_payload_len < 0)
-                tcp_payload_len = 0;
             payload_len_u32 = (__u32)tcp_payload_len;
             seq_advance = payload_len_u32;
             if (tcp_hdr.flags & 0x02) // SYN consumes one TCP sequence number.

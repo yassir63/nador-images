@@ -1,4 +1,4 @@
-name: Rebuild original latency probe on Rocky Linux
+name: Rebuild latency and OAI calculator from source
 
 on:
   push:
@@ -13,8 +13,10 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
-      - name: Verify original source checksums
-        run: sha256sum --check latency-probe-rocky/SHA256SUMS
+      - name: Verify patched source checksums
+        run: |
+          sha256sum --check latency-probe-rocky/SHA256SUMS
+          cmp latency-probe/gtp_latency.bpf.c latency-probe-rocky/gtp_latency.bpf.c
       - name: Record original installed package inventory
         run: |
           docker run --rm --platform linux/amd64 --network none --entrypoint rpm \
@@ -43,6 +45,34 @@ jobs:
             rpm -qa | sort
           '
       - name: Publish isolated Rocky test tag
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          printf '%s' "$GHCR_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+          docker push "$IMAGE"
+          docker buildx imagetools inspect "$IMAGE" >> "$GITHUB_STEP_SUMMARY"
+  calculator:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+      - name: Build standalone calculator
+        run: |
+          set -euo pipefail
+          image="ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/kpi-calculator-oai:source-${GITHUB_SHA}"
+          docker build --pull --platform linux/amd64 \
+            --label "org.opencontainers.image.source=https://github.com/$GITHUB_REPOSITORY" \
+            --label "org.opencontainers.image.revision=$GITHUB_SHA" \
+            -t "$image" kpi-calculator-oai
+          echo "IMAGE=$image" >> "$GITHUB_ENV"
+      - name: Validate calculator runtime and behavior
+        run: |
+          set -euo pipefail
+          docker run --rm --network none --entrypoint python3 "$IMAGE" -m pip check
+          docker run --rm --network none --entrypoint python3 "$IMAGE" -m compileall -q .
+          docker run --rm --network none --entrypoint python3 \
+            -v "$PWD/tests/check_source_rebuilds.py:/checks.py:ro" "$IMAGE" /checks.py calculator
+      - name: Publish isolated calculator test tag
         env:
           GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
