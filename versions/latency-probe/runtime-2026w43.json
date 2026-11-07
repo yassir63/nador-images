@@ -1,0 +1,48 @@
+{
+  "image": "r2labuser/ebpf-latency-probe:2026w43",
+  "digest": "sha256:b0444e0d606891f45667c6d05d672be277559a87e4858efc2cd1fd9a0a82e80e",
+  "parent": {
+    "image": "r2labuser/ebpf-latency-probe:2026e2eLatestDebug",
+    "digest": "sha256:a404d711528dd23903b0144e86769bdced734d9abcb254e75c3a8abb1b2ff3c5",
+    "verified_layer_prefix": true,
+    "inherited_layers": 23,
+    "child_layers": 27
+  },
+  "official_base": {
+    "image": "rockylinux:9.3",
+    "platform": "linux/amd64",
+    "digest": "sha256:d644d203142cd5b54ad2a83a203e1dee68af2229f8fe32f52a30c6e1d3c3a9e0",
+    "layer_digest": "sha256:446f83f14b236772583d069e6f46a75e7e5456add656d1415a452618189fb825",
+    "verified_against_original_base_layer": true
+  },
+  "python_series": "3.9",
+  "python_packages": {
+    "blinker": "1.9.0",
+    "click": "8.1.8",
+    "flask": "3.1.1",
+    "importlib_metadata": "8.7.0",
+    "itsdangerous": "2.2.0",
+    "jinja2": "3.1.6",
+    "prometheus_client": "0.22.0",
+    "werkzeug": "3.1.3",
+    "zipp": "3.21.0",
+    "MarkupSafe": "3.0.2"
+  },
+  "source_builds": {
+    "libbpf_commit": "dd92bef7f6c7a00bb0312554119b6d9cf38e4f32",
+    "libbpf_version": "1.8.0",
+    "bpftool_commit": "12701baaac934e2f65a6deef890f8b0b7eae4edf",
+    "bpftool_libbpf_submodule_commit": "dd92bef7f6c7a00bb0312554119b6d9cf38e4f32"
+  },
+  "build_inputs": {
+    "kernel_headers_devel_argument": "5.14.0-503.19.1.el9_5.x86_64",
+    "crictl_version": "1.28.0",
+    "vmlinux_header_generated_from_build_host_btf": true
+  },
+  "remaining_gaps": [
+    "Full installed RPM version inventory has not been recovered.",
+    "Python patch version has not been recovered.",
+    "Exact original build host BTF provenance has not been recovered."
+  ],
+  "method": "Registry config and history, inherited layer-prefix comparison, official base layer comparison, and source Git/package metadata extracted from layers without running the image."
+}
