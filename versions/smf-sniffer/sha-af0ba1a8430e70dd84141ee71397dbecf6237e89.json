@@ -2,7 +2,7 @@
   "image": "ghcr.io/yassir63/smf-sniffer:sha-af0ba1a8430e70dd84141ee71397dbecf6237e89",
   "version_alias": "ghcr.io/yassir63/smf-sniffer:2026w43",
   "digest": "sha256:be5faaf3c78242fb65438c13c427d3bf34cef3eda4d2fdeefa9c557166453285",
-  "source_repository": "yassir63/fiveg-lens-images",
+  "source_repository": "yassir63/nador-images",
   "source_commit": "af0ba1a8430e70dd84141ee71397dbecf6237e89",
   "changes": "Preserve endpoint-scoped session correlation and SMF/UPF F-SEID metadata.",
   "source_files_sha256": {
@@ -11,7 +11,7 @@
     "common/tunnel_identity.py": "bcc961a9fd6e89e8705c67bad5905ec62404e26ec85d053045150a520857d1ef"
   },
   "validation": {
-    "workflow": "https://github.com/yassir63/fiveg-lens-images/actions/runs/41882653262",
+    "workflow": "https://github.com/yassir63/nador-images/actions/runs/41882653262",
     "image_build": "passed",
     "packaged_python_compilation": "passed",
     "live_5g_deployment": "not_run"
