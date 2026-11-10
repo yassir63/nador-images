@@ -24,6 +24,10 @@ def assess(rows, kind, now, max_age):
 def connect(target, timeout):
     """Check TCP connection establishment only; no claim about SBI semantics."""
     start = time.monotonic()
+    if target.get("addresses"):
+        from active_checks import run_check
+        response = run_check(dict(target=target, allowlist=[target], timeout=timeout))
+        return int(response["success"]), time.monotonic() - start
     try:
         # Bound DNS resolution too; socket timeouts alone do not bound getaddrinfo.
         code = "import socket,sys; s=socket.create_connection((sys.argv[1],int(sys.argv[2])),float(sys.argv[3])); s.close()"
@@ -43,7 +47,8 @@ class ServiceCollector:
         success = GaugeMetricFamily("nador_reachability_success", "TCP connect success from this collector pod, not source NF or 3GPP procedure success", labels=["target"])
         duration = GaugeMetricFamily("nador_reachability_duration_seconds", "TCP connect attempt elapsed time including failed attempts", labels=["target"])
         with ThreadPoolExecutor(max_workers=8) as pool:
-            futures = [(target, pool.submit(connect, target, config["timeout_seconds"])) for target in config["reachability"]]
+            futures = [(target, pool.submit(connect, target, config["timeout_seconds"]))
+                       for target in config["reachability"] if not target.get("source_component")]
             for target, future in futures:
                 ok, elapsed = future.result()
                 success.add_metric([target["name"]], ok)

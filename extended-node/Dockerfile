@@ -6,4 +6,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY extended-node/*.py /app/
+COPY extended-node/nador_kernel/ /app/nador_kernel/
+COPY common/active_checks.py /app/
 CMD ["python3", "/app/node_probe.py"]

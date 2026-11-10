@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<!-- Synthetic PDML: independent wrappers must never share identifiers/CGI. -->
+<pdml>
+  <packet>
+    <proto name="ip"><field name="ip.src" show="192.0.2.1"/><field name="ip.dst" show="192.0.2.2"/></proto>
+    <proto name="sctp"><field name="sctp.srcport" show="38472"/><field name="sctp.dstport" show="38472"/><field name="sctp.assoc_index" show="0"/><field name="sctp.verification_tag" show="0x11111111"/></proto>
+    <proto name="f1ap">
+      <field name="f1ap.F1AP_PDU" show="0">
+        <field name="f1ap.initiatingMessage_element">
+          <field name="f1ap.procedureCode" show="5"/>
+          <field name="f1ap.UEContextSetupRequest_element">
+            <field name="f1ap.protocolIEs">
+              <field name="f1ap.ProtocolIE_Field_element"><field name="f1ap.value_element"><field name="f1ap.GNB_CU_UE_F1AP_ID" show="10"/></field></field>
+              <field name="f1ap.ProtocolIE_Field_element"><field name="f1ap.value_element"><field name="f1ap.NRCGI_element"><field name="f1ap.pLMN_Identity" value="00f110"/><field name="f1ap.nRCellIdentity" value="0000000010"/></field></field></field>
+            </field>
+          </field>
+        </field>
+      </field>
+      <field name="f1ap.F1AP_PDU" show="0">
+        <field name="f1ap.initiatingMessage_element"><field name="f1ap.procedureCode" show="5"/>
+          <field name="f1ap.UEContextSetupRequest_element"><field name="f1ap.protocolIEs">
+            <field name="f1ap.ProtocolIE_Field_element"><field name="f1ap.value_element"><field name="f1ap.GNB_CU_UE_F1AP_ID" show="20"/></field></field>
+          </field></field>
+        </field>
+      </field>
+    </proto>
+    <proto name="e1ap"><field name="e1ap.initiatingMessage_element"><field name="e1ap.procedureCode" show="8"/>
+      <field name="e1ap.BearerContextSetupRequest_element"><field name="e1ap.protocolIEs">
+        <field name="e1ap.ProtocolIE_Field_element"><field name="e1ap.value_element"><field name="e1ap.GNB_CU_CP_UE_E1AP_ID" show="30"/></field></field>
+      </field></field>
+    </field></proto>
+  </packet>
+</pdml>

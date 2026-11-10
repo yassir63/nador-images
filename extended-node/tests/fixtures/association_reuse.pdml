@@ -1,0 +1,24 @@
+<pdml>
+  <packet>
+    <proto name="ip"><field name="ip.src" show="192.0.2.1"/><field name="ip.dst" show="192.0.2.2"/></proto>
+    <proto name="sctp"><field name="sctp.srcport" show="38472"/><field name="sctp.dstport" show="38472"/><field name="sctp.assoc_index" show="1"/><field name="sctp.verification_tag" show="0x11111111"/></proto>
+    <proto name="f1ap"><field name="f1ap.initiatingMessage_element"><field name="f1ap.procedureCode" show="5"/>
+      <field name="f1ap.ProtocolIE_Field_element"><field name="f1ap.value_element"><field name="f1ap.GNB_CU_UE_F1AP_ID" show="7"/></field></field>
+    </field></proto>
+  </packet>
+  <packet>
+    <proto name="ip"><field name="ip.src" show="192.0.2.3"/><field name="ip.dst" show="192.0.2.4"/></proto>
+    <proto name="sctp"><field name="sctp.srcport" show="38472"/><field name="sctp.dstport" show="38472"/><field name="sctp.assoc_index" show="2"/><field name="sctp.verification_tag" show="0x33333333"/></proto>
+    <proto name="f1ap"><field name="f1ap.initiatingMessage_element"><field name="f1ap.procedureCode" show="5"/>
+      <field name="f1ap.ProtocolIE_Field_element"><field name="f1ap.value_element"><field name="f1ap.GNB_CU_UE_F1AP_ID" show="7"/></field></field>
+    </field></proto>
+  </packet>
+  <packet>
+    <proto name="ip"><field name="ip.src" show="192.0.2.4"/><field name="ip.dst" show="192.0.2.3"/></proto>
+    <proto name="sctp"><field name="sctp.srcport" show="38472"/><field name="sctp.dstport" show="38472"/><field name="sctp.assoc_index" show="2"/><field name="sctp.verification_tag" show="0x44444444"/></proto>
+    <proto name="f1ap"><field name="f1ap.successfulOutcome_element"><field name="f1ap.procedureCode" show="5"/>
+      <field name="f1ap.ProtocolIE_Field_element"><field name="f1ap.value_element"><field name="f1ap.GNB_CU_UE_F1AP_ID" show="7"/></field></field>
+      <field name="f1ap.ProtocolIE_Field_element"><field name="f1ap.value_element"><field name="f1ap.GNB_DU_UE_F1AP_ID" show="9"/></field></field>
+    </field></proto>
+  </packet>
+</pdml>

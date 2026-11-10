@@ -79,7 +79,13 @@ class NodeCollector:
     def __init__(self, config):
         self.config = config
         self.node = os.environ["NODE_NAME"]
-        self.drops = DropReasons() if config["kernel_drops"] else None
+        from nador_kernel import KernelSources
+        self.kernel = KernelSources(config)
+        self.drops = DropReasons() if self.kernel.use_legacy_drop_reasons else None
+        self.packets = None
+        if any(config.get(flag) for flag in ("qfi", "tcp_flows", "packet_concordance")):
+            from packet_observer import PortablePacketCapture
+            self.packets = PortablePacketCapture(config)
         self.capture = None
         if config["split_signaling"]:
             from split_observer import SplitCapture
@@ -165,14 +171,20 @@ class NodeCollector:
         tcp = GaugeMetricFamily("nador_tcp_namespace_counter", "Cumulative TCP netns counters, not GTP-U tunnel RTT", labels=labels + ["counter"])
         seen = set()
         active = {}
+        packet_active = {}
+        source_targets = {}
         for uid, process in processes:
             if uid in seen:
                 continue
             seen.add(uid)
             identity = [self.node, *pods[uid]]
-            if any(target["category"] == "ran" and target["namespace"] == pods[uid][0]
-                   and target["component"] == pods[uid][2] for target in self.config["targets"]):
+            target = next(t for t in self.config["targets"] if (t["namespace"], t["component"]) ==
+                          (pods[uid][0], pods[uid][2]))
+            source_targets[uid] = (process.name, identity, target["category"])
+            if target["category"] == "ran":
                 active[uid] = (process.name, identity)
+            if self.config.get("tcp_flows") or target.get("kind") in {"gnb", "upf", "cu", "cu_up"}:
+                packet_active[uid] = (process.name, identity)
             if self.config["network_queues"]:
                 try:
                     records = json.loads(run(["nsenter", "-t", process.name, "-n", "tc", "-s", "-j", "qdisc", "show"]))
@@ -202,6 +214,16 @@ class NodeCollector:
         if self.capture:
             self.capture.reconcile(active)
             yield from self.capture.collect()
+        if self.config.get("off_cpu") or self.config.get("attributed_drops"):
+            from kernel_metrics import kernel_metrics
+            self.kernel.reconcile(processes, pods, PROC, self.node)
+            yield from kernel_metrics(self.kernel.snapshot(), self.node)
+        if self.packets:
+            self.packets.reconcile(packet_active)
+            yield from self.packets.collect()
+        if any(t.get("source_component") for t in self.config["reachability"]):
+            from source_checks import collect_source_checks
+            yield from collect_source_checks(source_targets, self.config)
         yield success
 
 

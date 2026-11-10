@@ -5,9 +5,11 @@ import subprocess
 import threading
 import time
 import xml.etree.ElementTree as ET
+import uuid
 from collections import Counter
 
 from prometheus_client.core import GaugeMetricFamily
+from split_context import SplitContextTracker
 
 LOG = logging.getLogger("nador-split-signaling")
 
@@ -33,12 +35,14 @@ class Worker:
         self.counts = Counter()
         self.last = 0
         self.error = 0
+        self.tracker = SplitContextTracker()
         self.stopped = threading.Event()
         self.thread = threading.Thread(target=self.run, daemon=True)
         self.thread.start()
 
     def run(self):
         while not self.stopped.is_set():
+            scope = uuid.uuid4().hex
             try:
                 self.process = subprocess.Popen(
                     ["nsenter", "-t", self.pid, "-n", "tshark", "-n", "-i", "any",
@@ -51,6 +55,7 @@ class Worker:
                         root = element
                     if event == "end" and element.tag == "packet":
                         with self.lock:
+                            self.tracker.consume(element, time.monotonic(), scope)
                             for protocol, code in procedures(element):
                                 self.counts[(protocol, code)] += 1
                                 self.last = time.time()
@@ -61,6 +66,8 @@ class Worker:
                 with self.lock:
                     self.error += 1
             finally:
+                with self.lock:
+                    self.tracker.reset_scope(scope)
                 if self.process:
                     self.process.terminate()
                     try:
@@ -102,6 +109,7 @@ class SplitCapture:
         errors = GaugeMetricFamily("nador_split_capture_restarts", "Cumulative parser/process restarts for this capture worker", labels=labels)
         last = GaugeMetricFamily("nador_split_last_message_timestamp_seconds", "Last decoded F1AP/E1AP PDU observation", labels=labels)
         messages = GaugeMetricFamily("nador_split_pdus_observed", "Cumulative decoded PDUs per worker; both endpoints may observe the same PDU", labels=labels + ["protocol", "procedure_code"])
+        context_families = {}
         for worker in self.workers.values():
             with worker.lock:
                 process = worker.process
@@ -110,5 +118,10 @@ class SplitCapture:
                 last.add_metric(worker.identity, worker.last)
                 for (protocol, code), count in worker.counts.items():
                     messages.add_metric(worker.identity + [protocol, code], count)
+                for family in worker.tracker.collect(labels, worker.identity, time.monotonic()):
+                    existing = context_families.setdefault(family.name, family)
+                    if existing is not family:
+                        existing.samples.extend(family.samples)
         yield from (running, errors, last, messages)
+        yield from context_families.values()
         yield GaugeMetricFamily("nador_split_capture_targets_omitted", "Sources omitted due to capture limit", value=self.omitted)

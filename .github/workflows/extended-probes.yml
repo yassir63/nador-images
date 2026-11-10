@@ -2,10 +2,10 @@ name: Build experimental Nador probes
 
 on:
   push:
-    branches: [ml-extended]
-    paths: [extended-node/**, extended-service/**, .github/workflows/extended-probes.yml]
+    branches: [ml-extended, ml-extended-portable]
+    paths: [extended-node/**, extended-service/**, common/active_checks.py, .github/workflows/extended-probes.yml]
   pull_request:
-    paths: [extended-node/**, extended-service/**, .github/workflows/extended-probes.yml]
+    paths: [extended-node/**, extended-service/**, common/active_checks.py, .github/workflows/extended-probes.yml]
   workflow_dispatch:
 
 permissions:
@@ -23,7 +23,7 @@ jobs:
       - run: |
           python3 -m venv /tmp/extended-tests
           /tmp/extended-tests/bin/pip install pytest prometheus-client==0.21.1 requests==2.32.5
-          /tmp/extended-tests/bin/python -m pytest -q extended-node/test_probe.py extended-service/test_service.py
+          PYTHONPATH=extended-node:extended-service:common /tmp/extended-tests/bin/python -m pytest --import-mode=importlib -q extended-node extended-service
   build:
     needs: test
     runs-on: ubuntu-24.04
@@ -54,14 +54,14 @@ jobs:
           docker run --rm --network none --entrypoint python3 "$IMAGE" -c 'from bcc import BPF; import requests, prometheus_client'
           docker run --rm --network none --entrypoint tshark "$IMAGE" --version
       - name: Log in to GHCR
-        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/ml-extended'
+        if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/ml-extended' || github.ref == 'refs/heads/ml-extended-portable')
         uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Publish isolated experimental image and provenance
-        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/ml-extended'
+        if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/ml-extended' || github.ref == 'refs/heads/ml-extended-portable')
         env:
           COMPONENT: ${{ matrix.component }}
         run: |
@@ -77,7 +77,7 @@ jobs:
           Path('build-record.json').write_text(json.dumps(record, indent=2))
           PY
       - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
-        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/ml-extended'
+        if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/ml-extended' || github.ref == 'refs/heads/ml-extended-portable')
         with:
           name: nador-${{ matrix.component }}-${{ github.sha }}
           path: build-record.json
