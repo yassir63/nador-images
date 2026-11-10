@@ -231,6 +231,9 @@ def main():
     from prometheus_client import REGISTRY
     logging.basicConfig(level=logging.INFO)
     config = json.loads(Path("/etc/nador-extended/config.json").read_text())
+    kind_file = Path("/etc/nador-probe-kind")
+    if kind_file.exists() and config.get("probe_kind") != kind_file.read_text().strip():
+        raise ValueError("Probe image does not match its configured purpose")
     from runtime import CachedCollector
     REGISTRY.register(CachedCollector(NodeCollector(config), config["interval_seconds"]))
     start_http_server(9500)

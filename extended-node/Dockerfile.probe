@@ -1,0 +1,20 @@
+FROM debian:bookworm-slim
+ARG PROBE_KIND
+ENV DEBIAN_FRONTEND=noninteractive PYTHONUNBUFFERED=1
+RUN set -eu; \
+    case "$PROBE_KIND" in \
+      cpu|drops) packages="python3-bpfcc bpfcc-tools clang libbpf1" ;; \
+      split-signaling) packages="tshark" ;; \
+      queueing|tcp) packages="iproute2" ;; \
+      qfi|concordance|source-liveness) packages="" ;; \
+      *) exit 2 ;; \
+    esac; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends python3 python3-prometheus-client python3-requests util-linux ca-certificates $packages; \
+    rm -rf /var/lib/apt/lists/*; \
+    printf '%s\n' "$PROBE_KIND" > /etc/nador-probe-kind
+WORKDIR /app
+COPY extended-node/*.py /app/
+COPY extended-node/nador_kernel/ /app/nador_kernel/
+COPY common/active_checks.py /app/
+CMD ["python3", "/app/node_probe.py"]

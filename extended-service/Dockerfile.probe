@@ -1,0 +1,10 @@
+FROM python:3.12-slim
+ARG PROBE_KIND
+ENV PYTHONUNBUFFERED=1
+RUN case "$PROBE_KIND" in nf-liveness|measurement-quality) ;; *) exit 2 ;; esac && \
+    printf '%s\n' "$PROBE_KIND" > /etc/nador-probe-kind && \
+    pip install --no-cache-dir prometheus-client==0.21.1 requests==2.32.5
+WORKDIR /app
+COPY extended-service/*.py /app/
+COPY common/active_checks.py /app/
+CMD ["python3", "/app/service_probe.py"]
