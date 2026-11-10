@@ -135,7 +135,7 @@ def test_optional_path_publication_does_not_enable_monitoring():
     images = json.loads((ROOT/'images.json').read_text())
     record = {'component':'user-plane-path','source_commit':'a'*40,
         'tags':['ghcr.io/yassir63/user-plane-path-probe:sha-'+'a'*40], 'digest':'sha256:'+'b'*64,
-        'source_repository':'yassir63/fiveg-lens-images','source_change':'Add path probe'}
+        'source_repository':'yassir63/nador-images','source_change':'Add path probe'}
     manifest = {'probes':{},'components':{},'builds':{}}
     original = copy.deepcopy(manifest)
     assert 'opt-in' in apply_records(manifest,[record],images)

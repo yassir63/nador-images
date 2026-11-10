@@ -3,7 +3,7 @@
   "digest": null,
   "status": "source-prepared-not-published",
   "changes": "Add external Linux interface and passive GTP-U path monitoring.",
-  "source_origin": "fiveg-lens-images/user-plane-path",
+  "source_origin": "nador-images/user-plane-path",
   "source_files_sha256": {
     "user-plane-path/Dockerfile": "14e0d82747b0190b722a4f1f714bd5404ddf89c14d654799a19bc6b455f80a70",
     "user-plane-path/probe.py": "ea1fc91717345bbe96653f538176d5019bb2cc4582348829e227b67ffb645c66"

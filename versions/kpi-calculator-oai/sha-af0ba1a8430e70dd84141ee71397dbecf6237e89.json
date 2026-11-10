@@ -2,7 +2,7 @@
   "image": "ghcr.io/yassir63/kpi-calculator-oai:sha-af0ba1a8430e70dd84141ee71397dbecf6237e89",
   "version_alias": "ghcr.io/yassir63/kpi-calculator-oai:2026w43-radio-scoped",
   "digest": "sha256:804c732b5abd1d83e4dba6c3fb9aa8cd25c73394c2496894a173f67d81522d7f",
-  "source_repository": "yassir63/fiveg-lens-images",
+  "source_repository": "yassir63/nador-images",
   "source_commit": "af0ba1a8430e70dd84141ee71397dbecf6237e89",
   "changes": "Keep RAN component identity when calculating OAI radio KPIs from parser metrics.",
   "source_files_sha256": {
@@ -10,7 +10,7 @@
     "kpi-calculator-oai/kpi_calculator.py": "17e3a440dee7425459c080637ba9566a7d56aac0b11cf4809ec29f4def623fe6"
   },
   "validation": {
-    "workflow": "https://github.com/yassir63/fiveg-lens-images/actions/runs/41882653262",
+    "workflow": "https://github.com/yassir63/nador-images/actions/runs/41882653262",
     "image_build": "passed",
     "packaged_python_compilation": "passed",
     "live_5g_deployment": "not_run"

@@ -3,7 +3,7 @@
   "digest": null,
   "status": "source-prepared-not-published",
   "changes": "Add optional observability metrics while retaining current scoped mapping.",
-  "source_origin": "fiveg-lens-images/smf-sniffer",
+  "source_origin": "nador-images/smf-sniffer",
   "source_files_sha256": {
     "smf-sniffer/Dockerfile": "a2dda6fe75415d33ebeced01e6a985f69ed686877e98f7872ab08f572f65a3f8",
     "smf-sniffer/smf_sniffer.py": "30cd206f57a47964c773a3b7c9957d38758c98ce1e3cf5fa33b14c988224b74a",

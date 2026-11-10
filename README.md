@@ -1,6 +1,6 @@
-# FiveG Lens Images
+# NADOR Images
 
-Source code for the monitoring containers used by [FiveG Lens](https://github.com/yassir63/fiveg-lens).
+Source code for the monitoring containers used by [NADOR](https://github.com/yassir63/nador).
 
 The component runtime sources originate from the recorded local build directories.
 The controller default probe reference now points to GHCR; packet processing and discovery logic are unchanged.
@@ -57,9 +57,9 @@ Source origins are relative to the original CodeDev directory, without personal 
 
 ## Optional ML observability collectors
 
-This repository owns the runtime sources and Dockerfiles. FiveG Lens owns the
+This repository owns the runtime sources and Dockerfiles. NADOR owns the
 deployment settings, Helm assets and experiment artifact collection; there is
-no need to regenerate image sources from a FiveG Lens checkout.
+no need to regenerate image sources from a NADOR checkout.
 
 - `amf-sniffer/ngap_metrics.py` adds N2 PDU-session resource setup timing,
   outcomes and correlation diagnostics to the current AMF sniffer. Enable with
@@ -72,7 +72,7 @@ no need to regenerate image sources from a FiveG Lens checkout.
 - `ue-mapper/mapper_coverage.py` extends `/metrics` with bounded context coverage
   and Redis collection health, retaining `fiveg_ue_session_info`.
 - `user-plane-path/probe.py` is a separate external Linux interface/GTP-U probe.
-  FiveG Lens injects it into selected gNB/UPF pods and sets port 9403. Standalone
+  NADOR injects it into selected gNB/UPF pods and sets port 9403. Standalone
   default port is 9103. AF_PACKET capture requires Linux and `NET_RAW` capability.
 
 The `2026w45-ml` source records intentionally have no image digest: these changes
@@ -109,7 +109,7 @@ Inherited code, container bases and external dependencies retain their original 
 ## Monitoring update proposals
 
 After the selected images all build, pass checks and publish, the workflow proposes their commit tags
-in `fiveg-lens/src/fiveg_lens/assets/images.json`. Each build batch has its own pull request, containing
+in `nador/src/nador/assets/images.json`. Each build batch has its own pull request, containing
 source links and image digests. It changes no other monitoring files and never merges or deploys automatically.
 Without `MONITORING_REPO_TOKEN`, image publication still works and this optional step is skipped.
-The token must grant Contents and Pull requests write access to the `fiveg-lens` repository.
+The token must grant Contents and Pull requests write access to the `nador` repository.

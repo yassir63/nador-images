@@ -2,7 +2,7 @@
   "image": "ghcr.io/yassir63/ebpf-throughput-probe:sha-af0ba1a8430e70dd84141ee71397dbecf6237e89",
   "version_alias": "ghcr.io/yassir63/ebpf-throughput-probe:2026w44",
   "digest": "sha256:135e6344aa636dbb9f99705753ee5a72b6941485ab1c910a8dabb2cf84458304",
-  "source_repository": "yassir63/fiveg-lens-images",
+  "source_repository": "yassir63/nador-images",
   "source_commit": "af0ba1a8430e70dd84141ee71397dbecf6237e89",
   "changes": "Adds procps/pkill for probe replacement when UE mappings change. Keeps endpoint-scoped counters and first-fragment accounting from 2026w43-fragments.",
   "source_files_sha256": {
@@ -16,7 +16,7 @@
     "common/tunnel_identity.py": "bcc961a9fd6e89e8705c67bad5905ec62404e26ec85d053045150a520857d1ef"
   },
   "validation": {
-    "workflow": "https://github.com/yassir63/fiveg-lens-images/actions/runs/41882653262",
+    "workflow": "https://github.com/yassir63/nador-images/actions/runs/41882653262",
     "image_build": "passed",
     "packaged_python_compilation": "passed",
     "live_5g_deployment": "not_run"
