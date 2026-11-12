@@ -95,7 +95,7 @@ class NodeCollector:
         self.tcp_flows = None
         if config.get("tcp_flows"):
             from packet_observer import PortableTcpFlows
-            self.tcp_flows = PortablePacketCapture(config)
+            self.tcp_flows = PortableTcpFlows(config)
         self.capture = None
         if config["split_signaling"]:
             from split_observer import SplitCapture

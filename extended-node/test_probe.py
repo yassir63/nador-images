@@ -7,7 +7,19 @@ from xml.etree.ElementTree import fromstring
 
 sys.path.insert(0, str(Path(__file__).parent))
 from prometheus_client.core import CounterMetricFamily, GaugeMetricFamily
-from node_probe import collect_qdisc_metrics, pod_processes, sched_snapshot
+from node_probe import NodeCollector, collect_qdisc_metrics, pod_processes, sched_snapshot
+from packet_observer import PortableTcpFlows
+from split_observer import procedures
+
+
+def test_node_diagnostics_starts_with_tcp_flows_enabled(monkeypatch):
+    monkeypatch.setenv("NODE_NAME", "test-node")
+    monkeypatch.setenv("NADOR_PACKET_IDENTITY_KEY", "a" * 32)
+    collector = NodeCollector({
+        "tcp_flows": True, "packet_run_id": "test", "split_signaling": False,
+        "off_cpu": False, "attributed_drops": False, "kernel_drops": False,
+    })
+    assert isinstance(collector.tcp_flows, PortableTcpFlows)
 
 
 def test_qdisc_drops_preserve_zero_and_do_not_invent_missing_counters():
@@ -22,9 +34,6 @@ def test_qdisc_drops_preserve_zero_and_do_not_invent_missing_counters():
     assert [(sample.labels["interface"], sample.value) for sample in drops.samples] == [
         ("eth0", 32243), ("eth1", 0),
     ]
-from split_observer import procedures
-
-
 def test_schedstat_all_threads(tmp_path):
     process = tmp_path / "123"
     for tid, values in (("123", "1000000000 2000000000 3"), ("124", "2000000000 4000000000 5")):
