@@ -29,11 +29,12 @@ jobs:
     runs-on: ubuntu-24.04
     permissions:
       contents: read
-      packages: write
     strategy:
       fail-fast: false
       matrix:
         component: [extended-node, extended-service, probe-cpu, probe-drops, probe-queueing, probe-tcp, probe-qfi, probe-concordance, probe-split-signaling, probe-source-liveness, probe-nf-liveness, probe-measurement-quality, amf-visibility]
+    env:
+      IMAGE: ghcr.io/yassir63/nador-${{ matrix.component }}:extended-${{ github.sha }}
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
       - name: Build from source
@@ -52,35 +53,30 @@ jobs:
           docker build --pull --platform linux/amd64 -f "$dockerfile" "${args[@]}" \
             --label "org.opencontainers.image.source=https://github.com/$GITHUB_REPOSITORY" \
             --label "org.opencontainers.image.revision=$GITHUB_SHA" \
-            -t "ghcr.io/${GITHUB_REPOSITORY_OWNER}/nador-$COMPONENT:extended-$GITHUB_SHA" .
+            -t "$IMAGE" .
           docker run --rm --network none --entrypoint python3 \
-            "ghcr.io/${GITHUB_REPOSITORY_OWNER}/nador-$COMPONENT:extended-$GITHUB_SHA" -m compileall -q /app
+            "$IMAGE" -m compileall -q /app
       - name: Verify packaged tools
         if: matrix.component == 'extended-node' || matrix.component == 'probe-cpu' || matrix.component == 'probe-drops'
-        env:
-          IMAGE: ghcr.io/${{ github.repository_owner }}/nador-${{ matrix.component }}:extended-${{ github.sha }}
         run: |
           docker run --rm --network none --entrypoint python3 "$IMAGE" -c 'from bcc import BPF; import requests, prometheus_client'
       - name: Verify decoder package
         if: matrix.component == 'extended-node' || matrix.component == 'probe-split-signaling' || matrix.component == 'amf-visibility'
-        env:
-          IMAGE: ghcr.io/${{ github.repository_owner }}/nador-${{ matrix.component }}:extended-${{ github.sha }}
         run: docker run --rm --network none --entrypoint tshark "$IMAGE" --version
       - name: Log in to GHCR
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/ml-extended'
         uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6
         with:
           registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          username: yassir63
+          password: ${{ secrets.GHCR_PUBLISH_TOKEN }}
       - name: Publish isolated experimental image and provenance
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/ml-extended'
         env:
           COMPONENT: ${{ matrix.component }}
         run: |
-          image="ghcr.io/${GITHUB_REPOSITORY_OWNER}/nador-$COMPONENT:extended-$GITHUB_SHA"
-          docker push "$image"
-          docker buildx imagetools inspect "$image" --format '{{json .Manifest}}' > manifest.json
+          docker push "$IMAGE"
+          docker buildx imagetools inspect "$IMAGE" --format '{{json .Manifest}}' > manifest.json
           python3 - <<'PY'
           import json, os
           from pathlib import Path
