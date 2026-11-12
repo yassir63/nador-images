@@ -59,6 +59,7 @@ TCP_CORR_LABEL_NAMES = [
 TCP_CORR_EVICT_LABEL_NAMES = TCP_CORR_LABEL_NAMES + [
     "reason",
 ]
+TCP_PATH_LABEL_NAMES = [name for name in LABEL_NAMES if name not in ("mode", "kind")] + ["direction"]
 
 DEFAULT_HISTOGRAM_BUCKETS_NS = [
     50_000,
@@ -208,6 +209,25 @@ tcp_ack_no_match_total = Counter(
     TCP_CORR_LABEL_NAMES,
 )
 
+tcp_retransmission_candidates_total = Counter(
+    "gtp_tcp_retransmission_candidates_total",
+    "Repeated exact TCP data ranges observed at this N3 anchor; not endpoint retransmission or packet-loss counts",
+    TCP_PATH_LABEL_NAMES,
+)
+
+tcp_resets_observed_total = Counter(
+    "gtp_tcp_resets_observed_total",
+    "TCP packets with the RST flag observed at this N3 anchor; not distinct failed connections",
+    TCP_PATH_LABEL_NAMES,
+)
+
+tcp_rtt_variation_seconds = Histogram(
+    "gtp_tcp_rtt_variation_seconds",
+    "Absolute change between consecutive accepted TCP RTT samples of the same flow at this anchor",
+    TCP_PATH_LABEL_NAMES,
+    buckets=(.00001, .00005, .0001, .00025, .0005, .001, .0025, .005, .01, .025, .05, .1, .25, .5, 1),
+)
+
 
 def base_labels_for_event(evt):
     teid = normalize_teid(evt["teid"])
@@ -287,6 +307,30 @@ def observe_lost_event(evt):
     latency_lost_events_total.labels(**labels).inc(int(evt.get("lost_count", 0)))
 
 
+def tcp_path_labels(evt):
+    direction = evt.get("direction")
+    if direction not in ("uplink", "downlink"):
+        return None
+    base = base_labels_for_event(evt)
+    base["direction"] = direction
+    return {name: base[name] for name in TCP_PATH_LABEL_NAMES}
+
+
+def observe_tcp_path_signal(evt):
+    counter = {
+        "reset": tcp_resets_observed_total,
+        "retransmission_candidate": tcp_retransmission_candidates_total,
+    }.get(evt.get("signal"))
+    if counter is not None and (labels := tcp_path_labels(evt)) is not None:
+        counter.labels(**labels).inc()
+
+
+def observe_tcp_rtt_variation(evt):
+    variation_ns = int(evt["variation_ns"])
+    if variation_ns >= 0 and (labels := tcp_path_labels(evt)) is not None:
+        tcp_rtt_variation_seconds.labels(**labels).observe(variation_ns / 1e9)
+
+
 def observe_tcp_corr_stats_event(evt):
     labels = {
         "mode": label_value(evt.get("mode", "unknown")),
@@ -358,6 +402,10 @@ def listen_on_socket():
                 observe_lost_event(evt)
             elif event_type == "tcp_corr_stats":
                 observe_tcp_corr_stats_event(evt)
+            elif event_type == "tcp_path_signal":
+                observe_tcp_path_signal(evt)
+            elif event_type == "tcp_rtt_variation":
+                observe_tcp_rtt_variation(evt)
             else:
                 observe_latency_event(evt)
         except Exception as e:

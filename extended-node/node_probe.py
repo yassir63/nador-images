@@ -9,7 +9,7 @@ from collections import defaultdict
 from pathlib import Path
 
 from prometheus_client import start_http_server
-from prometheus_client.core import GaugeMetricFamily
+from prometheus_client.core import CounterMetricFamily, GaugeMetricFamily
 
 PROC = Path(os.environ.get("HOST_PROC", "/host/proc"))
 LOG = logging.getLogger("nador-node-diagnostics")
@@ -18,6 +18,16 @@ LOG = logging.getLogger("nador-node-diagnostics")
 def run(argv):
     """Never invoke a shell; bound every short-lived diagnostic command."""
     return subprocess.check_output(argv, text=True, timeout=3, stderr=subprocess.DEVNULL)
+
+def collect_qdisc_metrics(records, identity, backlog, drops):
+    for record in records:
+        labels = identity + [record.get("dev", "unknown"), record.get("handle", "unknown")]
+        value = record.get("backlog")
+        if type(value) is int and value >= 0:
+            backlog.add_metric(labels, value)
+        value = record.get("drops")
+        if type(value) is int and value >= 0:
+            drops.add_metric(labels, value)
 
 
 def pod_processes(proc, uids):
@@ -82,10 +92,10 @@ class NodeCollector:
         from nador_kernel import KernelSources
         self.kernel = KernelSources(config)
         self.drops = DropReasons() if self.kernel.use_legacy_drop_reasons else None
-        self.packets = None
-        if any(config.get(flag) for flag in ("qfi", "tcp_flows", "packet_concordance")):
-            from packet_observer import PortablePacketCapture
-            self.packets = PortablePacketCapture(config)
+        self.tcp_flows = None
+        if config.get("tcp_flows"):
+            from packet_observer import PortableTcpFlows
+            self.tcp_flows = PortablePacketCapture(config)
         self.capture = None
         if config["split_signaling"]:
             from split_observer import SplitCapture
@@ -168,11 +178,11 @@ class NodeCollector:
                 family.add_metric([self.node, str(reason)], count)
             yield family
         q = GaugeMetricFamily("nador_qdisc_backlog_bytes", "Software qdisc backlog, not hardware queue occupancy", labels=labels + ["interface", "handle"])
+        q_drops = CounterMetricFamily("nador_qdisc_dropped_packets", "Software qdisc drops since qdisc creation; not per-UE or end-to-end loss", labels=labels + ["interface", "handle"])
         tcp = GaugeMetricFamily("nador_tcp_namespace_counter", "Cumulative TCP netns counters, not GTP-U tunnel RTT", labels=labels + ["counter"])
         seen = set()
         active = {}
-        packet_active = {}
-        source_targets = {}
+        tcp_targets = {}
         for uid, process in processes:
             if uid in seen:
                 continue
@@ -180,18 +190,14 @@ class NodeCollector:
             identity = [self.node, *pods[uid]]
             target = next(t for t in self.config["targets"] if (t["namespace"], t["component"]) ==
                           (pods[uid][0], pods[uid][2]))
-            source_targets[uid] = (process.name, identity, target["category"])
             if target["category"] == "ran":
                 active[uid] = (process.name, identity)
-            if self.config.get("tcp_flows") or target.get("kind") in {"gnb", "upf", "cu", "cu_up"}:
-                packet_active[uid] = (process.name, identity)
+            if self.tcp_flows:
+                tcp_targets[uid] = (process.name, identity)
             if self.config["network_queues"]:
                 try:
                     records = json.loads(run(["nsenter", "-t", process.name, "-n", "tc", "-s", "-j", "qdisc", "show"]))
-                    for r in records:
-                        backlog = r.get("backlog")
-                        if isinstance(backlog, (int, float)):
-                            q.add_metric(identity + [r.get("dev", "unknown"), r.get("handle", "unknown")], backlog)
+                    collect_qdisc_metrics(records, identity, q, q_drops)
                     success.add_metric([self.node, "qdisc:" + pods[uid][2]], 1)
                 except Exception:
                     success.add_metric([self.node, "qdisc:" + pods[uid][2]], 0)
@@ -209,6 +215,7 @@ class NodeCollector:
                     success.add_metric([self.node, "tcp:" + pods[uid][2]], 0)
         if self.config["network_queues"]:
             yield q
+            yield q_drops
         if self.config["socket_counters"]:
             yield tcp
         if self.capture:
@@ -218,12 +225,9 @@ class NodeCollector:
             from kernel_metrics import kernel_metrics
             self.kernel.reconcile(processes, pods, PROC, self.node)
             yield from kernel_metrics(self.kernel.snapshot(), self.node)
-        if self.packets:
-            self.packets.reconcile(packet_active)
-            yield from self.packets.collect()
-        if any(t.get("source_component") for t in self.config["reachability"]):
-            from source_checks import collect_source_checks
-            yield from collect_source_checks(source_targets, self.config)
+        if self.tcp_flows:
+            self.tcp_flows.reconcile(tcp_targets)
+            yield from self.tcp_flows.collect()
         yield success
 
 

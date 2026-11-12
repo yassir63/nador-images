@@ -114,6 +114,7 @@ enum tcp_observation_type_t {
     TCP_OBS_CORE_ACK  = 2,
     TCP_OBS_RAN_DATA  = 3,
     TCP_OBS_RAN_ACK   = 4,
+    TCP_OBS_RESET     = 5,
 };
 
 struct tcp_observation_event_t {

@@ -7,7 +7,8 @@ RUN apt-get update \
 
 WORKDIR /app
 COPY latency-probe/gtp_latency.bpf.c latency-probe/gtp_latency.h \
-     latency-probe/gtp_latency_user.c latency-probe/Makefile ./
+     latency-probe/gtp_latency_user.c latency-probe/tcp_repeat.h \
+     latency-probe/tcp_rtt_variation.h latency-probe/Makefile ./
 RUN make BPFCFLAGS="-O2 -g -target bpf -I/usr/include/$(gcc -dumpmachine)"
 
 FROM debian:bookworm-slim

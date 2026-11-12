@@ -1,13 +1,12 @@
-"""Quality states and explicitly scoped TCP connectivity checks."""
+"""Prometheus quality states."""
 
-import socket
 import sys
 from pathlib import Path
 
 import pytest
 
 sys.path.insert(0, str(Path(__file__).parent))
-from service_probe import assess, connect
+from service_probe import ServiceCollector, assess
 
 
 def rows(*values):
@@ -30,16 +29,9 @@ def test_availability_is_not_event_freshness():
     assert assess(rows(95), "availability", 100, 10) == (1, True, None)
 
 
-def test_tcp_success():
-    with socket.socket() as server:
-        server.bind(("127.0.0.1", 0))
-        server.listen()
-        ok, duration = connect({"host": "127.0.0.1", "port": server.getsockname()[1]}, .2)
-    assert ok == 1 and duration >= 0
-
-
-def test_tcp_failure():
-    with socket.socket() as server:
-        server.bind(("127.0.0.1", 0))
-        port = server.getsockname()[1]
-    assert connect({"host": "127.0.0.1", "port": port}, .2)[0] == 0
+def test_quality_collector_does_not_require_active_check_configuration():
+    collector = ServiceCollector({"quality": True, "quality_queries": []})
+    assert {metric.name for metric in collector.collect()} == {
+        "nador_quality_query_success", "nador_quality_series",
+        "nador_quality_finite", "nador_quality_event_fresh",
+    }

@@ -3,9 +3,9 @@ name: Build experimental Nador probes
 on:
   push:
     branches: [ml-extended]
-    paths: [extended-node/**, extended-service/**, amf-visibility/**, common/active_checks.py, .github/workflows/extended-probes.yml]
+    paths: [extended-node/**, extended-service/**, amf-visibility/**, latency-probe/**, common/tunnel_identity.py, .github/workflows/extended-probes.yml]
   pull_request:
-    paths: [extended-node/**, extended-service/**, amf-visibility/**, common/active_checks.py, .github/workflows/extended-probes.yml]
+    paths: [extended-node/**, extended-service/**, amf-visibility/**, latency-probe/**, common/tunnel_identity.py, .github/workflows/extended-probes.yml]
   workflow_dispatch:
 
 permissions:
@@ -23,7 +23,9 @@ jobs:
       - run: |
           python3 -m venv /tmp/extended-tests
           /tmp/extended-tests/bin/pip install pytest prometheus-client==0.21.1 requests==2.32.5
-          PYTHONPATH=extended-node:extended-service:common /tmp/extended-tests/bin/python -m pytest --import-mode=importlib -q extended-node extended-service
+          PYTHONPATH=extended-node:extended-service /tmp/extended-tests/bin/python -m pytest --import-mode=importlib -q extended-node extended-service
+          cc -std=c11 -Wall -Wextra -Werror -I latency-probe latency-probe/tests/test_tcp_repeat.c -o /tmp/test-tcp-repeat
+          /tmp/test-tcp-repeat
   build:
     needs: test
     runs-on: ubuntu-24.04
@@ -32,9 +34,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        component: [extended-node, extended-service, probe-cpu, probe-drops, probe-queueing, probe-tcp, probe-qfi, probe-concordance, probe-split-signaling, probe-source-liveness, probe-nf-liveness, probe-measurement-quality, amf-visibility]
+        component: [extended-node, extended-service, probe-cpu, probe-drops, probe-queueing, probe-tcp, probe-split-signaling, probe-measurement-quality, amf-visibility, latency-probe]
     env:
-      IMAGE: ghcr.io/yassir63/nador-${{ matrix.component }}:extended-${{ github.sha }}
+      IMAGE: ghcr.io/yassir63/${{ matrix.component == 'latency-probe' && 'ebpf-latency-probe' || format('nador-{0}', matrix.component) }}:extended-${{ github.sha }}
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
       - name: Build from source
@@ -44,7 +46,7 @@ jobs:
           dockerfile="$COMPONENT/Dockerfile"
           args=()
           case "$COMPONENT" in
-            probe-nf-liveness|probe-measurement-quality) dockerfile=extended-service/Dockerfile.probe ;;
+            probe-measurement-quality) dockerfile=extended-service/Dockerfile.probe ;;
             probe-*) dockerfile=extended-node/Dockerfile.probe ;;
           esac
           if [[ "$COMPONENT" == probe-* ]]; then
@@ -60,6 +62,11 @@ jobs:
         if: matrix.component == 'extended-node' || matrix.component == 'probe-cpu' || matrix.component == 'probe-drops'
         run: |
           docker run --rm --network none --entrypoint python3 "$IMAGE" -c 'from bcc import BPF; import requests, prometheus_client'
+      - name: Verify TCP path metric labels
+        if: matrix.component == 'latency-probe'
+        run: |
+          docker run --rm --network none --entrypoint python3 -e PYTHONPATH=/app \
+            -v "$PWD/latency-probe/tests/test_tcp_path_exporter.py:/test.py:ro" "$IMAGE" /test.py
       - name: Verify decoder package
         if: matrix.component == 'extended-node' || matrix.component == 'probe-split-signaling' || matrix.component == 'amf-visibility'
         run: docker run --rm --network none --entrypoint tshark "$IMAGE" --version

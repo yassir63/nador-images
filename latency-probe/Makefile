@@ -20,7 +20,7 @@ INCLUDES = -I. -I./include -I/usr/include/bpf
 all: $(USER_BIN)
 
 # Compile eBPF object
-$(BPF_O): $(BPF_C)
+$(BPF_O): $(BPF_C) gtp_latency.h
 	@echo ">> Compiling eBPF object"
 	$(CLANG) $(BPFCFLAGS) -c $< -o $@
 
@@ -30,7 +30,7 @@ $(SKEL_H): $(BPF_O)
 	bpftool gen skeleton $< > $@
 
 # Compile user-space program
-$(USER_BIN): $(USER_C) $(SKEL_H)
+$(USER_BIN): $(USER_C) $(SKEL_H) gtp_latency.h tcp_repeat.h tcp_rtt_variation.h
 	@echo ">> Compiling user-space program"
 	gcc $(USERCFLAGS) $(INCLUDES) -o $@ $(USER_C) -lelf -lz -lbpf -ljson-c
 

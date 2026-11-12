@@ -479,6 +479,13 @@ static __noinline void parse_inner_ipv4_flow(
             if (tcp_hdr.flags & 0x01) // FIN consumes one TCP sequence number.
                 seq_advance += 1;
 
+            __u8 data_mode = logical_uplink ? LATENCY_MODE_CORE : LATENCY_MODE_RAN;
+            if ((tcp_hdr.flags & 0x04) && mode_enabled(configured_mode, data_mode))
+                emit_tcp_observation_event(
+                    skb, teid, inner_iph.saddr, inner_iph.daddr,
+                    evt.src_port, evt.dst_port, seq, ack_seq, seq_advance,
+                    payload_len_u32, direction, data_mode, tcp_hdr.flags, TCP_OBS_RESET);
+
             if (mode_enabled(configured_mode, LATENCY_MODE_CORE)) {
                 if (logical_uplink && ack_flag && seq_advance > 0) {
                     struct full_flow_id_t fid = {};

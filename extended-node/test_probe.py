@@ -6,7 +6,22 @@ from pathlib import Path
 from xml.etree.ElementTree import fromstring
 
 sys.path.insert(0, str(Path(__file__).parent))
-from node_probe import pod_processes, sched_snapshot
+from prometheus_client.core import CounterMetricFamily, GaugeMetricFamily
+from node_probe import collect_qdisc_metrics, pod_processes, sched_snapshot
+
+
+def test_qdisc_drops_preserve_zero_and_do_not_invent_missing_counters():
+    backlog = GaugeMetricFamily("backlog", "backlog", labels=["interface", "handle"])
+    drops = CounterMetricFamily("drops", "drops", labels=["interface", "handle"])
+    collect_qdisc_metrics([
+        {"dev": "eth0", "handle": "10:", "backlog": 64584, "drops": 32243},
+        {"dev": "eth1", "handle": "0:", "backlog": 0, "drops": 0},
+        {"dev": "eth2", "handle": "0:", "backlog": 0},
+    ], [], backlog, drops)
+    assert [sample.value for sample in backlog.samples] == [64584, 0, 0]
+    assert [(sample.labels["interface"], sample.value) for sample in drops.samples] == [
+        ("eth0", 32243), ("eth1", 0),
+    ]
 from split_observer import procedures
 
 

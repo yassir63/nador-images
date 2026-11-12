@@ -6,7 +6,6 @@ RUN set -eu; \
       cpu|drops) packages="python3-bpfcc bpfcc-tools clang libbpf1" ;; \
       split-signaling) packages="tshark" ;; \
       queueing|tcp) packages="iproute2" ;; \
-      qfi|concordance|source-liveness) packages="" ;; \
       *) exit 2 ;; \
     esac; \
     apt-get update; \
@@ -16,5 +15,4 @@ RUN set -eu; \
 WORKDIR /app
 COPY extended-node/*.py /app/
 COPY extended-node/nador_kernel/ /app/nador_kernel/
-COPY common/active_checks.py /app/
 CMD ["python3", "/app/node_probe.py"]
