@@ -93,6 +93,7 @@ struct tcp_corr_metric_totals_t {
     __u64 pending_evicted_overwrite;
     __u64 pending_evicted_ttl;
     __u64 pending_evicted_flow_reuse;
+    __u64 repeat_history_evicted;
     __u64 ack_no_match;
 };
 
@@ -607,6 +608,7 @@ static void emit_tcp_corr_stats_json(__u8 mode, const struct tcp_corr_metric_tot
     json_object_object_add(root, "pending_evicted_overwrite_count", json_object_new_int64((int64_t)metrics->pending_evicted_overwrite));
     json_object_object_add(root, "pending_evicted_ttl_count", json_object_new_int64((int64_t)metrics->pending_evicted_ttl));
     json_object_object_add(root, "pending_evicted_flow_reuse_count", json_object_new_int64((int64_t)metrics->pending_evicted_flow_reuse));
+    json_object_object_add(root, "repeat_history_evicted_count", json_object_new_int64((int64_t)metrics->repeat_history_evicted));
     json_object_object_add(root, "ack_no_match_count", json_object_new_int64((int64_t)metrics->ack_no_match));
     send_json_to_exporter(root);
     json_object_put(root);
@@ -640,6 +642,7 @@ static void flush_tcp_corr_metrics(int force) {
             !metrics->pending_evicted_overwrite &&
             !metrics->pending_evicted_ttl &&
             !metrics->pending_evicted_flow_reuse &&
+            !metrics->repeat_history_evicted &&
             !metrics->ack_no_match) {
             continue;
         }
@@ -766,7 +769,11 @@ static void handle_tcp_observation_event(void *ctx, int cpu, void *data, __u32 s
                 .ports = ((__u32)evt->src_port << 16) | evt->dst_port,
                 .seq = evt->seq, .payload_len = evt->payload_len, .mode = evt->mode,
             };
-            repeated = tcp_repeat_observe(tcp_repeat_table, &repeat_key, evt->timestamp_ns);
+            uint32_t evicted_mode;
+            repeated = tcp_repeat_observe(tcp_repeat_table, &repeat_key, evt->timestamp_ns, &evicted_mode);
+            struct tcp_corr_metric_totals_t *victim_metrics = tcp_corr_metrics_for_mode(evicted_mode);
+            if (victim_metrics)
+                victim_metrics->repeat_history_evicted++;
             if (repeated)
                 emit_tcp_path_signal(evt, "retransmission_candidate");
         }

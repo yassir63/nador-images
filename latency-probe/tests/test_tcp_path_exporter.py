@@ -5,6 +5,14 @@ import exporter
 
 
 class TcpPathMetrics(unittest.TestCase):
+    def test_recent_history_evictions_are_exported_separately(self):
+        exporter.observe_tcp_corr_stats_event({"mode": "core", "repeat_history_evicted_count": 0})
+        exporter.observe_tcp_corr_stats_event({"mode": "core", "repeat_history_evicted_count": 3})
+        samples = exporter.tcp_repeat_history_evictions_total.collect()[0].samples
+        total = next(sample for sample in samples if sample.name.endswith("_total"))
+        self.assertEqual(total.value, 3)
+        self.assertEqual(total.labels["mode"], "core")
+
     def test_variation_histogram_exports_seconds_without_flow_labels(self):
         with patch.object(exporter, "TEID_UE_MAP", {
             "192.0.2.3|0x0000002b": {"imsi": "003", "slice_id": "01:000003"},

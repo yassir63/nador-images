@@ -221,6 +221,12 @@ tcp_resets_observed_total = Counter(
     TCP_PATH_LABEL_NAMES,
 )
 
+tcp_repeat_history_evictions_total = Counter(
+    "gtp_tcp_repeat_history_evictions_total",
+    "Still-recent TCP sequence ranges evicted from the bounded history; not a retransmission count",
+    TCP_CORR_LABEL_NAMES,
+)
+
 tcp_rtt_variation_seconds = Histogram(
     "gtp_tcp_rtt_variation_seconds",
     "Absolute change between consecutive accepted TCP RTT samples of the same flow at this anchor",
@@ -347,6 +353,8 @@ def observe_tcp_corr_stats_event(evt):
     evicted_overwrite = int(evt.get("pending_evicted_overwrite_count", 0))
     evicted_ttl = int(evt.get("pending_evicted_ttl_count", 0))
     evicted_flow_reuse = int(evt.get("pending_evicted_flow_reuse_count", 0))
+    if "repeat_history_evicted_count" in evt:
+        tcp_repeat_history_evictions_total.labels(**labels).inc(int(evt["repeat_history_evicted_count"]))
 
     if data_observed > 0:
         tcp_data_observed_total.labels(**labels).inc(data_observed)
