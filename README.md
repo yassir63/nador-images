@@ -1,6 +1,6 @@
 # NADOR Images
 
-Source code for the monitoring containers used by [NADOR](https://github.com/yassir63/nador).
+Source code for the monitoring containers used by [NADOR](https://github.com/ifran-project/nador).
 
 The component runtime sources originate from the recorded local build directories.
 The controller default probe reference now points to GHCR; packet processing and discovery logic are unchanged.
@@ -27,7 +27,8 @@ while the OAI calculator uses its own directory.
 ## Automatic builds and publication
 
 The workflow checks and builds changed components on pull requests and pushes to `main`.
-Successful `main` builds publish automatically to GHCR using `GITHUB_TOKEN`; pull requests do not publish.
+Successful `main` builds publish to `ghcr.io/yassir63` using the `GHCR_PUBLISH_TOKEN`
+Actions secret (a classic token for `yassir63` with `write:packages`). Pull requests do not publish.
 Shared `common/` changes rebuild its consumers. Initial pushes and manual runs build every image.
 Changing the workflow, `images.json` or `.dockerignore` rebuilds every image.
 
@@ -68,4 +69,6 @@ After the selected images all build, pass checks and publish, the workflow propo
 in the NADOR monitoring image manifest. Each build batch has its own pull request, containing
 source links and image digests. It changes no other monitoring files and never merges or deploys automatically.
 Without `MONITORING_REPO_TOKEN`, image publication still works and this optional step is skipped.
-The token must grant Contents and Pull requests write access to the `nador` repository.
+Use a separate fine-grained token with `ifran-project` as the resource owner
+and Contents and Pull requests write access to `ifran-project/nador`.
+The proposals target that repository's `main` branch.
