@@ -3,9 +3,9 @@ name: Build experimental Nador probes
 on:
   push:
     branches: [ml-extended]
-    paths: [extended-node/**, extended-service/**, amf-visibility/**, latency-probe/**, common/tunnel_identity.py, .github/workflows/extended-probes.yml]
+    paths: [extended-node/**, extended-service/**, amf-visibility/**, latency-probe/**, n3-oneway/**, common/tunnel_identity.py, .github/workflows/extended-probes.yml]
   pull_request:
-    paths: [extended-node/**, extended-service/**, amf-visibility/**, latency-probe/**, common/tunnel_identity.py, .github/workflows/extended-probes.yml]
+    paths: [extended-node/**, extended-service/**, amf-visibility/**, latency-probe/**, n3-oneway/**, common/tunnel_identity.py, .github/workflows/extended-probes.yml]
   workflow_dispatch:
 
 permissions:
@@ -26,6 +26,7 @@ jobs:
           PYTHONPATH=extended-node:extended-service /tmp/extended-tests/bin/python -m pytest --import-mode=importlib -q extended-node extended-service
           cc -std=c11 -Wall -Wextra -Werror -I latency-probe latency-probe/tests/test_tcp_repeat.c -o /tmp/test-tcp-repeat
           /tmp/test-tcp-repeat
+          python3 -m unittest discover -s n3-oneway
   build:
     needs: test
     runs-on: ubuntu-24.04
@@ -34,7 +35,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        component: [extended-node, extended-service, probe-cpu, probe-drops, probe-queueing, probe-tcp, probe-split-signaling, probe-measurement-quality, amf-visibility, latency-probe]
+        component: [extended-node, extended-service, probe-cpu, probe-drops, probe-queueing, probe-tcp, probe-split-signaling, probe-measurement-quality, amf-visibility, latency-probe, n3-oneway]
     env:
       IMAGE: ghcr.io/yassir63/${{ matrix.component == 'latency-probe' && 'ebpf-latency-probe' || format('nador-{0}', matrix.component) }}:extended-${{ github.sha }}
     steps:
